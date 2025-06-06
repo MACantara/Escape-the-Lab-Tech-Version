@@ -1,3 +1,10 @@
+// Import networking modules for Room1
+import './networking/shield-manager.js';
+import './networking/attack-manager.js';
+import './networking/wave-manager.js';
+import './networking/audio-manager.js';
+import './networking/networking.js';
+
 // Import cloud computing modules for Room2
 import './cloud-computing/traffic-manager.js';
 import './cloud-computing/node-manager.js';
@@ -175,9 +182,9 @@ class EscapeTheLabGame {
                 </div>
             `;
 
-            // For Room2 (cloud-computing), the module is already imported
-            if (roomNumber === 2) {
-                // Cloud computing modules are already loaded via imports
+            // Handle modular rooms (Room1 and Room2) with ES6 imports
+            if (roomNumber === 1 || roomNumber === 2) {
+                // Networking and cloud computing modules are already loaded via imports
                 await this.sleep(100); // Small delay for UI
             } else {
                 // For other rooms, load scripts dynamically
