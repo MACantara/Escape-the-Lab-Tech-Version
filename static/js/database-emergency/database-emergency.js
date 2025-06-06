@@ -108,7 +108,7 @@ class Room4 {
                         <span class="text-green-400">MySQL Terminal</span>
                         <span class="text-gray-400">Server version: 8.0.35</span>
                     </div>
-                    <div class="terminal-body p-4" style="min-height: 300px; max-height: 400px; overflow-y: auto;">
+                    <div id="terminal-container" class="terminal-body p-4" style="min-height: 300px; max-height: 400px; overflow-y: auto;">
                         <div id="terminal-output" class="font-mono text-sm text-gray-300 mb-3">
                             <div class="text-blue-400">MySQL [CriticalBusiness_DB]> </div>
                             <div class="text-gray-400 mb-2">Welcome to the MySQL monitor. Commands end with ; or \\g.</div>
@@ -302,6 +302,16 @@ class Room4 {
             }
         });
 
+        // Auto-scroll on typing - ensure we scroll the right container
+        document.getElementById('sql-command')?.addEventListener('input', () => {
+            this.scrollTerminalToBottom();
+        });
+
+        // Auto-scroll on focus (when user clicks in input)
+        document.getElementById('sql-command')?.addEventListener('focus', () => {
+            this.scrollTerminalToBottom();
+        });
+
         // Command history navigation
         document.getElementById('sql-command')?.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowUp') {
@@ -369,14 +379,101 @@ class Room4 {
         resultDiv.innerHTML = result;
         terminalOutput.appendChild(resultDiv);
 
-        // Scroll to bottom
-        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        // Auto-scroll to bottom after adding content
+        this.scrollTerminalToBottom();
         
         // Clear input
         sqlInput.value = '';
         
         // Add command to history
         this.addToCommandHistory(command);
+    }
+
+    scrollTerminalToBottom() {
+        // Get the terminal container (the scrollable area)
+        const terminalContainer = document.getElementById('terminal-container');
+        if (terminalContainer) {
+            // Force immediate scroll to bottom
+            terminalContainer.scrollTop = terminalContainer.scrollHeight;
+            
+            // Also try with a slight delay to ensure content is rendered
+            setTimeout(() => {
+                terminalContainer.scrollTop = terminalContainer.scrollHeight;
+            }, 10);
+            
+            // Alternative: Use smooth scroll as backup
+            setTimeout(() => {
+                terminalContainer.scrollTo({
+                    top: terminalContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 50);
+        }
+    }
+
+    clearTerminal() {
+        const terminalOutput = document.getElementById('terminal-output');
+        terminalOutput.innerHTML = `
+            <div class="text-blue-400">MySQL [CriticalBusiness_DB]> </div>
+            <div class="text-gray-400 mb-2">Terminal cleared. Emergency recovery mode active.</div>
+            <div class="text-gray-400 mb-4">Type 'help;' for available commands.</div>
+        `;
+        
+        // Clear command history
+        this.commandHistory = [];
+        this.commandHistoryIndex = -1;
+        
+        // Show confirmation
+        const clearConfirm = document.createElement('div');
+        clearConfirm.className = 'text-green-400 mb-2';
+        clearConfirm.textContent = 'Terminal and command history cleared.';
+        terminalOutput.appendChild(clearConfirm);
+        
+        // Auto-scroll after clearing
+        this.scrollTerminalToBottom();
+    }
+
+    navigateHistory(direction) {
+        const sqlInput = document.getElementById('sql-command');
+        
+        if (this.commandHistory.length === 0) return;
+        
+        if (direction === 'up') {
+            if (this.commandHistoryIndex > 0) {
+                this.commandHistoryIndex--;
+                sqlInput.value = this.commandHistory[this.commandHistoryIndex];
+            }
+        } else if (direction === 'down') {
+            if (this.commandHistoryIndex < this.commandHistory.length - 1) {
+                this.commandHistoryIndex++;
+                sqlInput.value = this.commandHistory[this.commandHistoryIndex];
+            } else {
+                this.commandHistoryIndex = this.commandHistory.length;
+                sqlInput.value = '';
+            }
+        }
+        
+        // Move cursor to end and scroll terminal
+        setTimeout(() => {
+            sqlInput.setSelectionRange(sqlInput.value.length, sqlInput.value.length);
+            this.scrollTerminalToBottom();
+        }, 0);
+    }
+
+    addToCommandHistory(command) {
+        // Don't add empty commands or duplicate consecutive commands
+        if (!command.trim() || (this.commandHistory.length > 0 && this.commandHistory[this.commandHistory.length - 1] === command)) {
+            return;
+        }
+        
+        this.commandHistory.push(command);
+        this.commandHistoryIndex = this.commandHistory.length;
+        
+        // Limit history to last 50 commands
+        if (this.commandHistory.length > 50) {
+            this.commandHistory.shift();
+            this.commandHistoryIndex = this.commandHistory.length;
+        }
     }
 
     processSQL(command) {
@@ -569,67 +666,6 @@ class Room4 {
         `;
 
         return result;
-    }
-
-    clearTerminal() {
-        const terminalOutput = document.getElementById('terminal-output');
-        terminalOutput.innerHTML = `
-            <div class="text-blue-400">MySQL [CriticalBusiness_DB]> </div>
-            <div class="text-gray-400 mb-2">Terminal cleared. Emergency recovery mode active.</div>
-            <div class="text-gray-400 mb-4">Type 'help;' for available commands.</div>
-        `;
-        
-        // Clear command history
-        this.commandHistory = [];
-        this.commandHistoryIndex = -1;
-        
-        // Show confirmation
-        const clearConfirm = document.createElement('div');
-        clearConfirm.className = 'text-green-400 mb-2';
-        clearConfirm.textContent = 'Terminal and command history cleared.';
-        terminalOutput.appendChild(clearConfirm);
-    }
-
-    addToCommandHistory(command) {
-        // Don't add empty commands or duplicate consecutive commands
-        if (!command.trim() || (this.commandHistory.length > 0 && this.commandHistory[this.commandHistory.length - 1] === command)) {
-            return;
-        }
-        
-        this.commandHistory.push(command);
-        this.commandHistoryIndex = this.commandHistory.length;
-        
-        // Limit history to last 50 commands
-        if (this.commandHistory.length > 50) {
-            this.commandHistory.shift();
-            this.commandHistoryIndex = this.commandHistory.length;
-        }
-    }
-
-    navigateHistory(direction) {
-        const sqlInput = document.getElementById('sql-command');
-        
-        if (this.commandHistory.length === 0) return;
-        
-        if (direction === 'up') {
-            if (this.commandHistoryIndex > 0) {
-                this.commandHistoryIndex--;
-                sqlInput.value = this.commandHistory[this.commandHistoryIndex];
-            }
-        } else if (direction === 'down') {
-            if (this.commandHistoryIndex < this.commandHistory.length - 1) {
-                this.commandHistoryIndex++;
-                sqlInput.value = this.commandHistory[this.commandHistoryIndex];
-            } else {
-                this.commandHistoryIndex = this.commandHistory.length;
-                sqlInput.value = '';
-            }
-        }
-        
-        // Move cursor to end
-        setTimeout(() => {
-            sqlInput.setSelectionRange(sqlInput.value.length, sqlInput.value.length);
-        }, 0);
     }
 
     proceedToBackup() {
