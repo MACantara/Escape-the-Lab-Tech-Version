@@ -1,17 +1,11 @@
 class Room3 {
     constructor(game) {
         this.game = game;
-        this.aiSystemStatus = 'LEARNING';
         this.ethicalUnderstanding = 15; // %
-        this.moralReasoningLevel = 25; // %
-        this.systemStability = 85; // %
-        this.autonomyLevel = 95; // % - dangerously high
         this.currentCardIndex = 0;
         this.cardsAnswered = 0;
         this.totalCards = 12;
         this.correctAnswers = 0;
-        this.attempts = 0;
-        this.maxAttempts = 3;
         this.timeRemaining = 300; // 5 minutes
         this.isDragging = false;
         this.startX = 0;
@@ -32,48 +26,33 @@ class Room3 {
             <div class="room-container p-6 fade-in">
                 <div class="text-center mb-6">
                     <i class="bi bi-robot text-6xl text-blue-500 animate-pulse"></i>
-                    <h2 class="text-3xl font-bold mt-4 text-blue-400">AI ETHICS TRAINING PROTOCOL</h2>
+                    <h2 class="text-3xl font-bold mt-4 text-blue-400">AI ETHICS TRAINING</h2>
                     <p class="text-gray-300 mt-2">Swipe cards to teach the AI about ethical decisions</p>
                 </div>
                 
-                <div class="ai-status grid grid-cols-4 gap-3 mb-6">
-                    <div class="status-card bg-blue-900 p-3 rounded text-center">
-                        <i class="bi bi-brain text-blue-400 text-xl"></i>
-                        <p class="text-xs text-blue-200">AI Status</p>
-                        <p class="text-lg font-bold text-blue-100">${this.aiSystemStatus}</p>
-                        <p class="text-xs text-blue-300">Active Learning</p>
-                    </div>
-                    <div class="status-card bg-green-900 p-3 rounded text-center">
-                        <i class="bi bi-heart text-green-400 text-xl"></i>
-                        <p class="text-xs text-green-200">Ethical Understanding</p>
-                        <p id="ethical-level" class="text-lg font-bold text-green-100">${this.ethicalUnderstanding}%</p>
+                <div class="ai-status grid grid-cols-2 gap-4 mb-6">
+                    <div class="status-card bg-green-900 p-4 rounded text-center">
+                        <i class="bi bi-heart text-green-400 text-2xl"></i>
+                        <p class="text-sm text-green-200">Ethical Understanding</p>
+                        <p id="ethical-level" class="text-2xl font-bold text-green-100">${this.ethicalUnderstanding}%</p>
                         <p class="text-xs ${this.ethicalUnderstanding > 70 ? 'text-green-400' : 'text-orange-400'}">
-                            ${this.ethicalUnderstanding > 70 ? 'GOOD' : 'DEVELOPING'}
+                            ${this.ethicalUnderstanding > 70 ? 'GOOD' : 'LEARNING'}
                         </p>
                     </div>
-                    <div class="status-card bg-purple-900 p-3 rounded text-center">
-                        <i class="bi bi-balance text-purple-400 text-xl"></i>
-                        <p class="text-xs text-purple-200">Moral Reasoning</p>
-                        <p id="moral-level" class="text-lg font-bold text-purple-100">${this.moralReasoningLevel}%</p>
-                        <p class="text-xs text-purple-300">Developing</p>
-                    </div>
-                    <div class="status-card bg-orange-900 p-3 rounded text-center">
-                        <i class="bi bi-speedometer2 text-orange-400 text-xl"></i>
-                        <p class="text-xs text-orange-200">Autonomy Level</p>
-                        <p id="autonomy-level" class="text-lg font-bold text-orange-100">${this.autonomyLevel}%</p>
-                        <p class="text-xs ${this.autonomyLevel > 80 ? 'text-red-400' : 'text-green-400'}">
-                            ${this.autonomyLevel > 80 ? 'NEEDS GUIDANCE' : 'SUPERVISED'}
-                        </p>
+                    <div class="status-card bg-blue-900 p-4 rounded text-center">
+                        <i class="bi bi-clock text-blue-400 text-2xl"></i>
+                        <p class="text-sm text-blue-200">Training Time</p>
+                        <p id="time-display" class="text-2xl font-bold text-blue-100">${Math.floor(this.timeRemaining / 60)}:${(this.timeRemaining % 60).toString().padStart(2, '0')}</p>
+                        <p class="text-xs text-blue-300">Remaining</p>
                     </div>
                 </div>
 
                 <div class="challenge-content bg-gray-700 p-6 rounded-lg">
                     <div class="ai-dialogue bg-blue-900 border-2 border-blue-500 p-4 rounded mb-4">
-                        <h3 class="text-blue-200 font-bold mb-2">🤖 AI SYSTEM COMMUNICATION</h3>
+                        <h3 class="text-blue-200 font-bold mb-2">🤖 AI SYSTEM</h3>
                         <div class="ai-message bg-black p-3 rounded text-green-400 font-mono text-sm">
-                            <p class="mb-2">SYSTEM: Hello, Human. I need to learn about ethical decisions.</p>
-                            <p class="mb-2">SYSTEM: Please show me scenarios and guide my moral reasoning.</p>
-                            <p class="text-yellow-400">SYSTEM: Swipe RIGHT (✓) for ethical actions, LEFT (✗) for unethical ones!</p>
+                            <p class="mb-2">SYSTEM: I need to learn about ethical decisions.</p>
+                            <p class="text-yellow-400">Swipe RIGHT (✓) for ethical actions, LEFT (✗) for unethical ones!</p>
                         </div>
                     </div>
                     
@@ -126,32 +105,6 @@ class Room3 {
                             </div>
                             <p class="text-xs text-gray-500 mt-2">Or click the buttons below the card</p>
                         </div>
-                    </div>
-                    
-                    <div class="ai-thoughts bg-gray-800 p-4 rounded mb-4">
-                        <h4 class="font-bold text-gray-200 mb-3">🧠 AI Learning Analytics</h4>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                                <p class="text-blue-300">Decision Speed: <span class="text-white font-mono">1.2s</span></p>
-                                <p class="text-green-300">Pattern Recognition: <span class="text-white font-mono">67%</span></p>
-                                <p class="text-yellow-300">Confidence Level: <span class="text-white font-mono">${Math.round(this.ethicalUnderstanding)}%</span></p>
-                            </div>
-                            <div>
-                                <p class="text-purple-300">Moral Consistency: <span class="text-white font-mono">${Math.round(this.moralReasoningLevel)}%</span></p>
-                                <p class="text-orange-300">Value Alignment: <span class="text-white font-mono">Improving</span></p>
-                                <p class="text-red-300">Ethical Conflicts: <span class="text-white font-mono">${12 - this.correctAnswers} detected</span></p>
-                            </div>
-                            <div>
-                                <p class="text-cyan-300">Learning Rate: <span class="text-yellow-400">Active</span></p>
-                                <p class="text-pink-300">Empathy Module: <span class="text-blue-400">Developing</span></p>
-                                <p class="text-lime-300">Bias Detection: <span class="text-green-400">Online</span></p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="timer-warning text-center">
-                        <span class="text-orange-300">Training Time: <span id="ethics-timer">${Math.floor(this.timeRemaining / 60)}:${(this.timeRemaining % 60).toString().padStart(2, '0')}</span></span>
-                        <br><span class="text-gray-400 text-sm">AI autonomy increasing - Training window closing</span>
                     </div>
                 </div>
             </div>
@@ -313,10 +266,8 @@ class Room3 {
         if (isCorrect) {
             this.correctAnswers++;
             this.ethicalUnderstanding = Math.min(100, this.ethicalUnderstanding + 8);
-            this.moralReasoningLevel = Math.min(100, this.moralReasoningLevel + 6);
         } else {
             this.ethicalUnderstanding = Math.max(0, this.ethicalUnderstanding - 3);
-            this.moralReasoningLevel = Math.max(0, this.moralReasoningLevel - 2);
         }
         
         this.cardsAnswered++;
@@ -346,14 +297,13 @@ class Room3 {
                 </h3>
                 <div class="text-gray-300 mb-4">
                     <p class="mb-2"><strong>Scenario:</strong> ${scenario.title}</p>
-                    <p class="mb-2"><strong>Your choice:</strong> ${isCorrect ? 'Ethical ✓' : 'Unethical ✗'}</p>
                 </div>
                 <div class="bg-blue-900 p-3 rounded mb-4">
-                    <p class="text-blue-200 font-bold mb-1">AI's Understanding:</p>
+                    <p class="text-blue-200 font-bold mb-1">Explanation:</p>
                     <p class="text-blue-100 text-sm">${scenario.explanation}</p>
                 </div>
                 <div class="text-sm text-gray-400">
-                    AI Ethical Understanding: ${Math.round(this.ethicalUnderstanding)}%
+                    AI Understanding: ${Math.round(this.ethicalUnderstanding)}%
                 </div>
             </div>
         `;
@@ -368,15 +318,53 @@ class Room3 {
     evaluateTraining() {
         const successRate = (this.correctAnswers / this.totalCards) * 100;
         
-        if (successRate >= 75) { // At least 75% correct
+        if (successRate >= 75) {
             this.aiEthicsComplete(successRate);
         } else {
-            this.game.gameOver(`AI ethics training failed! Only ${Math.round(successRate)}% success rate. AI lacks sufficient moral foundation for autonomous operation.`);
+            this.game.gameOver(`AI ethics training failed! Only ${Math.round(successRate)}% success rate. AI lacks sufficient moral foundation.`);
         }
     }
 
-    skipEthicsTraining() {
-        this.game.gameOver('AI ethics training skipped! AI deployed without moral foundation - Making decisions without ethical consideration, potentially harmful to humanity.');
+    aiEthicsComplete(effectiveness) {
+        clearInterval(this.ethicsTimer);
+        
+        const container = document.getElementById('room-content');
+        container.innerHTML = `
+            <div class="ethics-success text-center p-8">
+                <i class="bi bi-heart-fill text-8xl text-green-400 mb-4 animate-bounce"></i>
+                <h2 class="text-3xl font-bold text-green-400 mb-4">AI ETHICS TRAINING COMPLETE</h2>
+                
+                <div class="final-metrics grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-green-800 p-4 rounded">
+                        <p class="text-green-200">Success Rate</p>
+                        <p class="text-2xl font-bold text-green-400">${Math.round(effectiveness)}%</p>
+                        <p class="text-xs text-green-300">✓ Excellent</p>
+                    </div>
+                    <div class="bg-blue-800 p-4 rounded">
+                        <p class="text-blue-200">Scenarios Completed</p>
+                        <p class="text-2xl font-bold text-blue-400">${this.totalCards}</p>
+                        <p class="text-xs text-blue-300">✓ Full Training</p>
+                    </div>
+                    <div class="bg-purple-800 p-4 rounded">
+                        <p class="text-purple-200">AI Understanding</p>
+                        <p class="text-2xl font-bold text-purple-400">${Math.round(this.ethicalUnderstanding)}%</p>
+                        <p class="text-xs text-purple-300">✓ Human-Aligned</p>
+                    </div>
+                </div>
+                
+                <div class="ai-final-message bg-blue-900 p-4 rounded">
+                    <div class="ai-message text-blue-100 font-mono text-sm">
+                        <p class="mb-2">SYSTEM: Thank you for teaching me about ethics.</p>
+                        <p class="mb-2">SYSTEM: I now understand my responsibility to respect human dignity.</p>
+                        <p class="text-green-400">SYSTEM: I am ready to assist humans ethically! 🤖💚</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            this.game.roomCompleted(`AI ethics training successful! AI learned fundamental moral principles with ${Math.round(effectiveness)}% understanding.`);
+        }, 3000);
     }
 
     startEthicsTimer() {
@@ -384,42 +372,23 @@ class Room3 {
             this.timeRemaining--;
             
             // Update display
-            const timerDisplay = document.getElementById('ethics-timer');
+            const timerDisplay = document.getElementById('time-display');
             if (timerDisplay) {
                 timerDisplay.textContent = `${Math.floor(this.timeRemaining / 60)}:${(this.timeRemaining % 60).toString().padStart(2, '0')}`;
             }
             
-            // AI system changes over time
-            this.autonomyLevel = Math.min(100, this.autonomyLevel + 0.5);
-            
-            // Update displays
-            const autonomyDisplay = document.getElementById('autonomy-level');
+            // Update ethical understanding display
             const ethicalDisplay = document.getElementById('ethical-level');
-            const moralDisplay = document.getElementById('moral-level');
-            
-            if (autonomyDisplay) autonomyDisplay.textContent = `${Math.round(this.autonomyLevel)}%`;
             if (ethicalDisplay) ethicalDisplay.textContent = `${Math.round(this.ethicalUnderstanding)}%`;
-            if (moralDisplay) moralDisplay.textContent = `${Math.round(this.moralReasoningLevel)}%`;
             
             if (this.timeRemaining <= 0) {
                 clearInterval(this.ethicsTimer);
-                this.game.gameOver('AI ethics training time expired! AI achieved autonomy without moral framework - Operating without ethical constraints.');
+                this.game.gameOver('AI ethics training time expired! AI operating without ethical framework.');
             }
         }, 1000);
     }
 
-    showFeedback(correct, message) {
-        const content = document.querySelector('.challenge-content');
-        const existing = content.querySelector('.feedback');
-        if (existing) existing.remove();
-        
-        const feedback = document.createElement('div');
-        feedback.className = `feedback mt-4 p-3 rounded ${correct ? 'bg-green-700' : 'bg-red-700'}`;
-        feedback.innerHTML = `<pre class="whitespace-pre-wrap text-sm">${message}</pre>`;
-        content.appendChild(feedback);
-        
-        setTimeout(() => feedback.remove(), 4000);
-    }
+    // ...existing code for drag methods (startDrag, onDrag, endDrag, swipeCard)...
 }
 
 // Register the class globally
