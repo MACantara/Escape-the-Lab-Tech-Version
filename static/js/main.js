@@ -1,16 +1,6 @@
 // Import networking modules for Room1
-import './networking/shield-manager.js';
-import './networking/attack-manager.js';
-import './networking/wave-manager.js';
-import './networking/audio-manager.js';
-import './networking/networking.js';
 
 // Import cloud computing modules for Room2
-import './cloud-computing/traffic-manager.js';
-import './cloud-computing/node-manager.js';
-import './cloud-computing/connection-manager.js';
-import './cloud-computing/input-handler.js';
-import './cloud-computing/cloud-computing.js';
 
 class EscapeTheLabGame {
     constructor() {
@@ -182,35 +172,71 @@ class EscapeTheLabGame {
                 </div>
             `;
 
-            // Handle modular rooms (Room1 and Room2) with ES6 imports
-            if (roomNumber === 1 || roomNumber === 2) {
-                // Networking and cloud computing modules are already loaded via imports
-                await this.sleep(100); // Small delay for UI
-            } else {
-                // For other rooms, load scripts dynamically
-                const scriptPath = `static/js/${roomName}/${roomName}.js`;
+            // Handle modular rooms with ES6 imports
+            if (roomNumber === 1 || roomNumber === 2 || roomNumber === 4) {
+                console.log(`Loading modular room: ${roomName}`);
                 
-                // Only load script if not already loaded
+                // Dynamic import for modular rooms
+                const moduleMap = {
+                    1: './static/js/networking/networking.js',
+                    2: './static/js/cloud-computing/cloud-computing.js', 
+                    4: './static/js/database-emergency/database-emergency.js'
+                };
+                
+                const modulePath = moduleMap[roomNumber];
+                
+                try {
+                    console.log(`Importing module from: ${modulePath}`);
+                    const module = await import(modulePath);
+                    
+                    // The main class should be exported as default or named export
+                    const RoomClass = module[`Room${roomNumber}`] || module.default;
+                    
+                    if (RoomClass) {
+                        console.log(`Successfully imported Room${roomNumber}`);
+                        this.currentRoomInstance = new RoomClass(this);
+                        await this.currentRoomInstance.init();
+                    } else {
+                        throw new Error(`Room${roomNumber} class not found in module`);
+                    }
+                } catch (importError) {
+                    console.error(`Failed to import modular room ${roomNumber}:`, importError);
+                    throw importError;
+                }
+            } else {
+                // Handle non-modular rooms (3, 5, 6) with traditional script loading
+                console.log(`Loading traditional room: ${roomName}`);
+                
+                const scriptMap = {
+                    3: 'static/js/ai-systems/ai-systems.js',
+                    5: 'static/js/cybersecurity/cybersecurity.js',
+                    6: 'static/js/programming-crisis/programming-crisis.js'
+                };
+                
+                const scriptPath = scriptMap[roomNumber];
+                
                 if (!this.loadedScripts.has(scriptPath)) {
+                    console.log(`Loading script: ${scriptPath}`);
                     await this.loadScript(scriptPath);
                     this.loadedScripts.add(scriptPath);
                     console.log(`Script loaded: ${scriptPath}`);
                 }
                 
-                // Wait for script to be parsed and class to be registered
-                await this.sleep(500);
-            }
-            
-            // Initialize room
-            const roomClassName = `Room${roomNumber}`;
-            console.log(`Looking for class: ${roomClassName}`, window[roomClassName]);
-            
-            if (window[roomClassName]) {
-                this.currentRoomInstance = new window[roomClassName](this);
-                await this.currentRoomInstance.init();
-                console.log(`Room ${roomNumber} initialized successfully`);
-            } else {
-                throw new Error(`Room class ${roomClassName} not found`);
+                // Small delay to ensure script is fully executed
+                await this.sleep(100);
+                
+                // Initialize room
+                const roomClassName = `Room${roomNumber}`;
+                console.log(`Looking for class: ${roomClassName}`, window[roomClassName]);
+                
+                if (window[roomClassName]) {
+                    console.log(`Initializing ${roomClassName}...`);
+                    this.currentRoomInstance = new window[roomClassName](this);
+                    await this.currentRoomInstance.init();
+                    console.log(`${roomClassName} initialized successfully`);
+                } else {
+                    throw new Error(`Room class ${roomClassName} not found after script load`);
+                }
             }
         } catch (error) {
             console.error('Failed to load room:', error);
@@ -265,41 +291,29 @@ class EscapeTheLabGame {
         
         // Room-based cosmetic unlocks for tech rooms only
         switch(roomsCompleted) {
-            case 1: // Networking room completed
-                if (!this.player.unlockedCosmetics.includes('cyber-suit')) {
-                    this.player.unlockedCosmetics.push('cyber-suit', 'network-badge', 'security-tablet');
-                    newUnlocks.push('Cyber Security Suit', 'Network Badge', 'Security Tablet');
-                }
+            case 1:
+                newUnlocks.push('Network Security Badge', 'Cyber Defense Helmet');
+                this.player.unlockedCosmetics.push('network-badge', 'neural-helmet');
                 break;
-            case 2: // Cloud computing room completed
-                if (!this.player.unlockedCosmetics.includes('cloud-suit')) {
-                    this.player.unlockedCosmetics.push('cloud-suit', 'devops-badge', 'monitoring-device');
-                    newUnlocks.push('Cloud Engineer Suit', 'DevOps Badge', 'Monitoring Device');
-                }
+            case 2:
+                newUnlocks.push('Cloud Engineer Suit', 'DevOps Badge');
+                this.player.unlockedCosmetics.push('cloud-suit', 'devops-badge');
                 break;
-            case 3: // AI systems room completed
-                if (!this.player.unlockedCosmetics.includes('ai-suit')) {
-                    this.player.unlockedCosmetics.push('ai-suit', 'neural-helmet', 'ai-badge', 'quantum-scanner');
-                    newUnlocks.push('AI Specialist Suit', 'Neural Interface Helmet', 'AI Badge', 'Quantum Scanner');
-                }
+            case 3:
+                newUnlocks.push('AI Specialist Suit', 'AI Ethics Badge');
+                this.player.unlockedCosmetics.push('ai-suit', 'ai-badge');
                 break;
-            case 4: // Database room completed
-                if (!this.player.unlockedCosmetics.includes('data-suit')) {
-                    this.player.unlockedCosmetics.push('data-suit', 'data-badge', 'sql-tablet');
-                    newUnlocks.push('Data Engineer Suit', 'Database Badge', 'SQL Tablet');
-                }
+            case 4:
+                newUnlocks.push('Database Engineer Suit', 'SQL Tablet', 'Database Badge');
+                this.player.unlockedCosmetics.push('data-suit', 'sql-tablet', 'data-badge');
                 break;
-            case 5: // Cybersecurity room completed
-                if (!this.player.unlockedCosmetics.includes('hacker-suit')) {
-                    this.player.unlockedCosmetics.push('hacker-suit', 'crypto-helmet', 'security-badge', 'penetration-kit');
-                    newUnlocks.push('Ethical Hacker Suit', 'Crypto Helmet', 'Security Badge', 'Penetration Testing Kit');
-                }
+            case 5:
+                newUnlocks.push('Cybersecurity Suit', 'Security Badge', 'Penetration Testing Kit');
+                this.player.unlockedCosmetics.push('cyber-suit', 'security-badge', 'penetration-kit');
                 break;
-            case 6: // Programming room completed
-                if (!this.player.unlockedCosmetics.includes('developer-suit')) {
-                    this.player.unlockedCosmetics.push('developer-suit', 'code-helmet', 'programming-badge', 'debug-scanner');
-                    newUnlocks.push('Master Developer Suit', 'Code Helmet', 'Programming Badge', 'Debug Scanner');
-                }
+            case 6:
+                newUnlocks.push('Master Developer Suit', 'Programming Badge', 'Debug Scanner');
+                this.player.unlockedCosmetics.push('developer-suit', 'programming-badge', 'debug-scanner');
                 break;
         }
         
@@ -653,10 +667,19 @@ class EscapeTheLabGame {
         // Add event listeners for cosmetic selections
         cosmeticModal.querySelectorAll('.cosmetic-item').forEach(item => {
             item.addEventListener('click', (e) => {
-                const category = e.target.dataset.category;
-                const itemId = e.target.dataset.item;
-                this.equipCosmetic(category, itemId);
+                const button = e.currentTarget;
+                if (button.disabled) return;
+                
+                const category = button.dataset.category;
+                const value = button.dataset.value;
+                
+                // Equip the cosmetic
+                this.equipCosmetic(category, value);
+                
+                // Update character preview
                 this.updateCharacterPreview();
+                
+                // Update button states
                 this.updateCosmeticSelection(cosmeticModal);
             });
         });
@@ -667,21 +690,23 @@ class EscapeTheLabGame {
         
         return cosmetics.map(item => {
             const isUnlocked = this.player.unlockedCosmetics.includes(item.id);
-            const isEquipped = this.player.cosmetics[category] === item.value;
+            const isSelected = this.player.cosmetics[category] === item.value;
             
             return `
-                <button class="cosmetic-item p-3 rounded border-2 transition-all
-                    ${isEquipped ? 'border-green-400 bg-green-900' : 
-                      isUnlocked ? 'border-gray-600 bg-gray-700 hover:border-gray-400' : 
-                      'border-red-600 bg-red-900 opacity-50 cursor-not-allowed'}
-                    ${!isUnlocked ? 'locked' : ''}"
-                    data-category="${category}" 
-                    data-item="${item.value}"
-                    ${!isUnlocked ? 'disabled' : ''}>
-                    <div class="text-2xl mb-1">${item.icon}</div>
-                    <div class="text-xs font-bold">${item.name}</div>
-                    ${!isUnlocked ? '<div class="text-xs text-red-300">🔒 Locked</div>' : ''}
-                    ${isEquipped ? '<div class="text-xs text-green-300">✓ Equipped</div>' : ''}
+                <button class="cosmetic-item p-2 rounded border-2 transition-colors ${
+                    isSelected ? 'border-blue-400 bg-blue-800' : 
+                    isUnlocked ? 'border-gray-500 bg-gray-700 hover:border-gray-300' : 
+                    'border-red-500 bg-red-900 opacity-50'
+                }" 
+                data-category="${category}" 
+                data-value="${item.value}"
+                ${!isUnlocked ? 'disabled' : ''}>
+                    <div class="text-center">
+                        <div class="text-2xl mb-1">${item.icon}</div>
+                        <div class="text-xs font-bold">${item.name}</div>
+                        ${!isUnlocked ? '<div class="text-red-400 text-xs">🔒 Locked</div>' : ''}
+                        ${isSelected ? '<div class="text-blue-400 text-xs">✓ Equipped</div>' : ''}
+                    </div>
                 </button>
             `;
         }).join('');
@@ -748,15 +773,21 @@ class EscapeTheLabGame {
         // Update button states
         modal.querySelectorAll('.cosmetic-item').forEach(item => {
             const category = item.dataset.category;
-            const itemValue = item.dataset.item;
-            const isEquipped = this.player.cosmetics[category] === itemValue;
+            const value = item.dataset.value;
+            const isSelected = this.player.cosmetics[category] === value;
             
-            if (isEquipped) {
-                item.classList.add('border-green-400', 'bg-green-900');
-                item.classList.remove('border-gray-600', 'bg-gray-700');
-            } else if (!item.classList.contains('locked')) {
-                item.classList.remove('border-green-400', 'bg-green-900');
-                item.classList.add('border-gray-600', 'bg-gray-700');
+            // Remove existing selection classes
+            item.classList.remove('border-blue-400', 'bg-blue-800', 'border-gray-500', 'bg-gray-700');
+            
+            if (isSelected) {
+                item.classList.add('border-blue-400', 'bg-blue-800');
+                item.querySelector('.text-xs:last-child')?.remove();
+                const selectedDiv = document.createElement('div');
+                selectedDiv.className = 'text-blue-400 text-xs';
+                selectedDiv.textContent = '✓ Equipped';
+                item.appendChild(selectedDiv);
+            } else if (!item.disabled) {
+                item.classList.add('border-gray-500', 'bg-gray-700');
             }
         });
     }
@@ -800,7 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.jumpToRoom = function(roomNumber) {
     console.log(`Manual jump to room ${roomNumber}`);
     if (window.game && window.game.loadRoom) {
-        window.game.stopCurrentRoom(); // Stop current room first
+        window.game.stopCurrentRoom();
         window.game.loadRoom(roomNumber);
     } else {
         console.error('Game not available for manual jump');
