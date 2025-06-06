@@ -101,39 +101,42 @@ class Room4 {
                 
                 <div class="sql-terminal bg-black p-4 rounded mb-4">
                     <div class="terminal-header bg-gray-800 p-2 rounded-t flex justify-between items-center">
-                        <span class="text-green-400">SQL Terminal</span>
-                        <span class="text-gray-400">mysql> _</span>
+                        <span class="text-green-400">MySQL Terminal</span>
+                        <span class="text-gray-400">Server version: 8.0.35</span>
                     </div>
-                    <div class="terminal-body p-4">
-                        <textarea id="sql-input" 
-                                  class="w-full bg-transparent text-green-400 font-mono resize-none border-none outline-none" 
-                                  rows="6" 
-                                  placeholder="-- Enter SQL commands to check database integrity
--- Example: SHOW TABLES;
--- Example: CHECK TABLE tablename;"
-                                  style="background: transparent !important;"></textarea>
+                    <div class="terminal-body p-4" style="min-height: 300px; max-height: 400px; overflow-y: auto;">
+                        <div id="terminal-output" class="font-mono text-sm text-gray-300 mb-3">
+                            <div class="text-blue-400">MySQL [CriticalBusiness_DB]> </div>
+                            <div class="text-gray-400 mb-2">Welcome to the MySQL monitor. Commands end with ; or \\g.</div>
+                            <div class="text-gray-400 mb-2">Database connection established. Type 'help;' or '\\h' for help.</div>
+                            <div class="text-gray-400 mb-4">Emergency recovery mode active.</div>
+                        </div>
+                        <div class="terminal-input flex items-center">
+                            <span class="text-blue-400 mr-2">mysql> </span>
+                            <input type="text" id="sql-command" 
+                                   class="flex-1 bg-transparent text-green-400 font-mono border-none outline-none"
+                                   placeholder="Enter SQL command..."
+                                   autocomplete="off">
+                        </div>
                     </div>
-                    <div class="terminal-footer p-2">
+                    <div class="terminal-footer p-2 border-t border-gray-600">
                         <button id="execute-sql" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-sm">
-                            <i class="bi bi-play-fill"></i> Execute Query
+                            <i class="bi bi-play-fill"></i> Execute (Enter)
                         </button>
                         <button id="clear-terminal" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded text-sm ml-2">
-                            <i class="bi bi-trash"></i> Clear
+                            <i class="bi bi-trash"></i> Clear History
                         </button>
-                    </div>
-                </div>
-                
-                <div class="query-results bg-gray-800 p-4 rounded mb-4" style="max-height: 200px; overflow-y: auto;">
-                    <h4 class="text-white font-bold mb-2">Query Results:</h4>
-                    <div id="results-output" class="text-sm font-mono">
-                        <div class="text-gray-400">Ready to execute SQL commands...</div>
+                        <span class="text-gray-400 text-xs ml-4">Tip: Press Enter to execute, use ↑↓ for command history</span>
                     </div>
                 </div>
                 
                 <div class="diagnostic-hint bg-blue-900 p-3 rounded">
                     <p class="text-blue-200 text-sm">
-                        <strong>Hint:</strong> Use <code>SHOW TABLES;</code> to see all tables, then 
-                        <code>CHECK TABLE tablename;</code> to assess corruption levels.
+                        <strong>Emergency Commands:</strong> 
+                        <code>SHOW TABLES;</code> | 
+                        <code>CHECK TABLE tablename;</code> | 
+                        <code>SHOW STATUS;</code> | 
+                        <code>DESCRIBE tablename;</code>
                     </p>
                 </div>
             </div>
@@ -288,9 +291,14 @@ class Room4 {
             this.executeSQLCommand();
         });
 
+        document.getElementById('sql-command')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.executeSQLCommand();
+            }
+        });
+
         document.getElementById('clear-terminal')?.addEventListener('click', () => {
-            document.getElementById('sql-input').value = '';
-            document.getElementById('results-output').innerHTML = '<div class="text-gray-400">Terminal cleared...</div>';
+            this.clearTerminal();
         });
 
         // Backup selection
@@ -324,178 +332,213 @@ class Room4 {
     }
 
     executeSQLCommand() {
-        const sqlInput = document.getElementById('sql-input');
-        const resultsOutput = document.getElementById('results-output');
-        const command = sqlInput.value.trim().toUpperCase();
+        const sqlInput = document.getElementById('sql-command');
+        const terminalOutput = document.getElementById('terminal-output');
+        const command = sqlInput.value.trim();
 
         if (!command) return;
 
-        // Simulate SQL execution
-        let result = '';
+        // Add command to terminal output
+        const commandDiv = document.createElement('div');
+        commandDiv.className = 'mb-2';
+        commandDiv.innerHTML = `<span class="text-blue-400">mysql> </span><span class="text-white">${command}</span>`;
+        terminalOutput.appendChild(commandDiv);
+
+        // Process command and generate result
+        const result = this.processSQL(command.toUpperCase());
         
+        // Add result to terminal output
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'mb-3';
+        resultDiv.innerHTML = result;
+        terminalOutput.appendChild(resultDiv);
+
+        // Scroll to bottom
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        
+        // Clear input
+        sqlInput.value = '';
+        
+        // Add command to history
+        this.addToCommandHistory(command);
+    }
+
+    processSQL(command) {
         if (command.includes('SHOW TABLES')) {
-            result = `
-                <div class="text-green-400">+----------------+</div>
-                <div class="text-green-400">| Tables_in_db   |</div>
-                <div class="text-green-400">+----------------+</div>
-                ${Object.keys(this.tablesStatus).map(table => 
-                    `<div class="text-gray-300">| ${table.padEnd(14)} |</div>`
-                ).join('')}
-                <div class="text-green-400">+----------------+</div>
-                <div class="text-blue-400">8 rows in set (0.01 sec)</div>
-            `;
+            return this.generateShowTablesResult();
         } else if (command.includes('CHECK TABLE')) {
             const tableName = command.match(/CHECK TABLE (\w+)/)?.[1]?.toLowerCase();
-            if (tableName && this.tablesStatus[tableName]) {
-                const status = this.tablesStatus[tableName];
-                result = `
-                    <div class="text-green-400">Table: ${tableName}</div>
-                    <div class="text-${status === 'corrupted' ? 'red' : 'green'}-400">Status: ${status === 'corrupted' ? 'Corrupted - needs repair' : 'OK'}</div>
-                    <div class="text-blue-400">1 row in set (0.02 sec)</div>
-                `;
-                
-                if (status === 'corrupted') {
-                    // Progress assessment
-                    this.assessmentProgress++;
-                    if (this.assessmentProgress >= 3) {
-                        setTimeout(() => this.proceedToBackup(), 2000);
-                    }
-                }
-            } else {
-                result = '<div class="text-red-400">Error: Table not found</div>';
-            }
+            return this.generateCheckTableResult(tableName);
+        } else if (command.includes('SHOW STATUS')) {
+            return this.generateShowStatusResult();
+        } else if (command.includes('DESCRIBE') || command.includes('DESC')) {
+            const tableName = command.match(/DESC(?:RIBE)?\s+(\w+)/)?.[1]?.toLowerCase();
+            return this.generateDescribeTableResult(tableName);
+        } else if (command.includes('SELECT')) {
+            return this.generateSelectResult(command);
+        } else if (command.includes('HELP') || command.includes('\\H')) {
+            return this.generateHelpResult();
         } else {
-            result = '<div class="text-red-400">Error: Command not recognized or not safe in recovery mode</div>';
+            return '<div class="text-red-400">ERROR 1064 (42000): Command not recognized or not safe in recovery mode</div><div class="text-gray-400">Type \'help;\' for available emergency commands.</div>';
         }
-
-        resultsOutput.innerHTML += `
-            <div class="mb-2">
-                <div class="text-yellow-400">mysql> ${sqlInput.value}</div>
-                ${result}
-            </div>
-        `;
-        resultsOutput.scrollTop = resultsOutput.scrollHeight;
-        sqlInput.value = '';
     }
 
-    selectBackup(backupId) {
-        const backup = this.data.available_backups.find(b => b.id === backupId);
-        if (!backup) return;
+    generateShowTablesResult() {
+        const result = `
+            <div class="text-green-400">+------------------+</div>
+            <div class="text-green-400">| Tables_in_db     |</div>
+            <div class="text-green-400">+------------------+</div>
+            ${Object.keys(this.tablesStatus).map(table => 
+                `<div class="text-gray-300">| ${table.padEnd(16)} |</div>`
+            ).join('')}
+            <div class="text-green-400">+------------------+</div>
+            <div class="text-blue-400">${Object.keys(this.tablesStatus).length} rows in set (0.01 sec)</div>
+        `;
+        return result;
+    }
 
-        // Highlight selected backup
-        document.querySelectorAll('.backup-item').forEach(item => {
-            item.classList.remove('bg-blue-700', 'border-blue-400');
-            item.classList.add('bg-gray-800');
+    generateCheckTableResult(tableName) {
+        if (!tableName || !this.tablesStatus[tableName]) {
+            return '<div class="text-red-400">ERROR 1146 (42S02): Table doesn\'t exist</div>';
+        }
+
+        const status = this.tablesStatus[tableName];
+        const statusText = status === 'corrupted' ? 'Corrupted' : status === 'repairing' ? 'Under repair' : 'OK';
+        const statusColor = status === 'corrupted' ? 'text-red-400' : status === 'repairing' ? 'text-yellow-400' : 'text-green-400';
+        
+        const result = `
+            <div class="text-green-400">+----------+--------+----------+----------+</div>
+            <div class="text-green-400">| Table    | Op     | Msg_type | Msg_text |</div>
+            <div class="text-green-400">+----------+--------+----------+----------+</div>
+            <div class="text-gray-300">| ${tableName.padEnd(8)} | check  | status   | <span class="${statusColor}">${statusText.padEnd(8)}</span> |</div>
+            ${status === 'corrupted' ? `<div class="text-gray-300">| ${tableName.padEnd(8)} | check  | warning  | <span class="text-orange-400">1 client is using or hasn't closed the table properly</span> |</div>` : ''}
+            ${status === 'corrupted' ? `<div class="text-gray-300">| ${tableName.padEnd(8)} | check  | error    | <span class="text-red-400">Table '${tableName}' is marked as crashed and should be repaired</span> |</div>` : ''}
+            <div class="text-green-400">+----------+--------+----------+----------+</div>
+            <div class="text-blue-400">1 row in set (0.03 sec)</div>
+        `;
+
+        // Progress assessment
+        if (status === 'corrupted') {
+            this.assessmentProgress = (this.assessmentProgress || 0) + 1;
+            if (this.assessmentProgress >= 3) {
+                setTimeout(() => this.proceedToBackup(), 2000);
+            }
+        }
+
+        return result;
+    }
+
+    generateShowStatusResult() {
+        return `
+            <div class="text-green-400">+---------------------------+-------+</div>
+            <div class="text-green-400">| Variable_name             | Value |</div>
+            <div class="text-green-400">+---------------------------+-------+</div>
+            <div class="text-gray-300">| Connections               | 847   |</div>
+            <div class="text-gray-300">| Created_tmp_tables        | 23891 |</div>
+            <div class="text-gray-300">| Handler_read_first        | 4567  |</div>
+            <div class="text-gray-300">| Innodb_buffer_pool_reads  | <span class="text-red-400">98234</span> |</div>
+            <div class="text-gray-300">| Innodb_data_reads         | <span class="text-red-400">45678</span> |</div>
+            <div class="text-gray-300">| Questions                 | 23456 |</div>
+            <div class="text-gray-300">| Slow_queries              | <span class="text-yellow-400">1247</span>  |</div>
+            <div class="text-gray-300">| Threads_connected         | 156   |</div>
+            <div class="text-gray-300">| Uptime                    | <span class="text-red-400">847</span>   |</div>
+            <div class="text-green-400">+---------------------------+-------+</div>
+            <div class="text-blue-400">9 rows in set (0.02 sec)</div>
+            <div class="text-yellow-400">Warning: High buffer pool reads indicate potential corruption</div>
+        `;
+    }
+
+    generateDescribeTableResult(tableName) {
+        if (!tableName || !this.tablesStatus[tableName]) {
+            return '<div class="text-red-400">ERROR 1146 (42S02): Table doesn\'t exist</div>';
+        }
+
+        const tableStructures = {
+            'users': [
+                ['id', 'int(11)', 'NO', 'PRI', 'NULL', 'auto_increment'],
+                ['username', 'varchar(50)', 'NO', 'UNI', 'NULL', ''],
+                ['email', 'varchar(100)', 'NO', '', 'NULL', ''],
+                ['password_hash', 'varchar(255)', 'NO', '', 'NULL', ''],
+                ['created_at', 'timestamp', 'NO', '', 'CURRENT_TIMESTAMP', '']
+            ],
+            'orders': [
+                ['order_id', 'int(11)', 'NO', 'PRI', 'NULL', 'auto_increment'],
+                ['user_id', 'int(11)', 'NO', 'MUL', 'NULL', ''],
+                ['total_amount', 'decimal(10,2)', 'NO', '', 'NULL', ''],
+                ['order_date', 'timestamp', 'NO', '', 'CURRENT_TIMESTAMP', ''],
+                ['status', 'enum(\'pending\',\'shipped\',\'delivered\')', 'NO', '', 'pending', '']
+            ]
+        };
+
+        const structure = tableStructures[tableName] || [
+            ['id', 'int(11)', 'NO', 'PRI', 'NULL', 'auto_increment'],
+            ['data', 'text', 'YES', '', 'NULL', ''],
+            ['created_at', 'timestamp', 'NO', '', 'CURRENT_TIMESTAMP', '']
+        ];
+
+        let result = `
+            <div class="text-green-400">+-------------+-------------+------+-----+---------+----------------+</div>
+            <div class="text-green-400">| Field       | Type        | Null | Key | Default | Extra          |</div>
+            <div class="text-green-400">+-------------+-------------+------+-----+---------+----------------+</div>
+        `;
+
+        structure.forEach(([field, type, nullVal, key, defaultVal, extra]) => {
+            result += `<div class="text-gray-300">| ${field.padEnd(11)} | ${type.padEnd(11)} | ${nullVal.padEnd(4)} | ${key.padEnd(3)} | ${defaultVal.padEnd(7)} | ${extra.padEnd(14)} |</div>`;
         });
-        
-        document.querySelector(`[data-backup="${backupId}"]`).classList.add('bg-blue-700', 'border-blue-400');
 
-        // Update restore command
-        const restorePreview = document.getElementById('restore-preview');
-        restorePreview.textContent = `mysql -u root -p database_name < ${backup.filename}`;
-
-        // Enable restore button
-        document.getElementById('execute-restore').disabled = false;
-        this.selectedBackup = backup;
-    }
-
-    executeRestore() {
-        if (!this.selectedBackup) return;
-
-        const integrity = this.selectedBackup.integrity;
-        this.dataIntegrity = Math.max(this.dataIntegrity, integrity);
-        
-        // Update some tables to recovered status
-        const tablesToRecover = Math.floor(integrity / 25);
-        let recovered = 0;
-        
-        for (const [table, status] of Object.entries(this.tablesStatus)) {
-            if (status === 'corrupted' && recovered < tablesToRecover) {
-                this.tablesStatus[table] = 'recovered';
-                recovered++;
-                this.recoveredTables++;
-                this.corruptedTables--;
-            }
-        }
-
-        this.showMessage(`Backup restored! ${recovered} tables recovered with ${integrity}% integrity.`, 'success');
-        
-        setTimeout(() => {
-            this.currentStep = 'recovery';
-            this.render();
-        }, 2000);
-    }
-
-    executeRepairCommand() {
-        const commandInput = document.getElementById('repair-command');
-        const repairOutput = document.getElementById('repair-output');
-        const command = commandInput.value.trim().toUpperCase();
-
-        if (!command) return;
-
-        let result = '';
-        
-        if (command.includes('REPAIR TABLE')) {
-            const tableName = command.match(/REPAIR TABLE (\w+)/)?.[1]?.toLowerCase();
-            if (tableName && this.tablesStatus[tableName] === 'corrupted') {
-                this.tablesStatus[tableName] = 'repairing';
-                result = `<div class="text-yellow-400">Repairing table ${tableName}...</div>`;
-                
-                // Simulate repair time
-                setTimeout(() => {
-                    this.tablesStatus[tableName] = 'recovered';
-                    this.recoveredTables++;
-                    this.corruptedTables--;
-                    this.dataIntegrity += 10;
-                    
-                    const output = document.getElementById('repair-output');
-                    output.innerHTML += `<div class="text-green-400">Table ${tableName} repaired successfully!</div>`;
-                    
-                    if (this.recoveredTables >= 6) {
-                        setTimeout(() => {
-                            this.currentStep = 'verification';
-                            this.render();
-                        }, 1000);
-                    } else {
-                        this.render(); // Update the table cards
-                    }
-                }, 3000);
-                
-            } else if (tableName && this.tablesStatus[tableName] === 'recovered') {
-                result = `<div class="text-blue-400">Table ${tableName} is already in good condition.</div>`;
-            } else {
-                result = `<div class="text-red-400">Error: Table ${tableName} not found or cannot be repaired.</div>`;
-            }
-        } else {
-            result = '<div class="text-red-400">Error: Invalid repair command</div>';
-        }
-
-        repairOutput.innerHTML += `
-            <div class="mb-1">
-                <div class="text-cyan-400">> ${command}</div>
-                ${result}
-            </div>
-        `;
-        repairOutput.scrollTop = repairOutput.scrollHeight;
-        commandInput.value = '';
-    }
-
-    runVerificationTest(testId) {
-        const test = this.data.verification_tests.find(t => t.id === testId);
-        const testOutput = document.getElementById('test-output');
-        
-        testOutput.innerHTML += `
-            <div class="mb-2">
-                <div class="text-blue-400">Running ${test.name}...</div>
-                <div class="text-green-400">✓ ${test.expected_result}</div>
-            </div>
+        result += `
+            <div class="text-green-400">+-------------+-------------+------+-----+---------+----------------+</div>
+            <div class="text-blue-400">${structure.length} rows in set (0.01 sec)</div>
         `;
 
-        // Check if all tests completed
-        this.completedTests = (this.completedTests || 0) + 1;
-        if (this.completedTests >= this.data.verification_tests.length) {
-            setTimeout(() => this.databaseRecovered(), 2000);
+        return result;
+    }
+
+    generateSelectResult(command) {
+        // Basic simulation of SELECT results
+        if (command.includes('COUNT')) {
+            return `
+                <div class="text-green-400">+----------+</div>
+                <div class="text-green-400">| COUNT(*) |</div>
+                <div class="text-green-400">+----------+</div>
+                <div class="text-gray-300">|    23891 |</div>
+                <div class="text-green-400">+----------+</div>
+                <div class="text-blue-400">1 row in set (0.15 sec)</div>
+                <div class="text-yellow-400">Warning: Query execution time high due to table corruption</div>
+            `;
         }
+        return '<div class="text-red-400">ERROR 1030 (HY000): Got error 145 "Table was marked as crashed" from storage engine</div>';
+    }
+
+    generateHelpResult() {
+        return `
+            <div class="text-cyan-400">Emergency Database Recovery Commands:</div>
+            <div class="text-gray-300 mt-2">
+                <div class="mb-1"><span class="text-green-400">SHOW TABLES;</span>                - List all tables in database</div>
+                <div class="mb-1"><span class="text-green-400">CHECK TABLE tablename;</span>      - Check table for corruption</div>
+                <div class="mb-1"><span class="text-green-400">DESCRIBE tablename;</span>         - Show table structure</div>
+                <div class="mb-1"><span class="text-green-400">SHOW STATUS;</span>                - Display server status variables</div>
+                <div class="mb-1"><span class="text-green-400">SELECT COUNT(*) FROM table;</span> - Count rows (if accessible)</div>
+                <div class="mb-1"><span class="text-yellow-400">REPAIR TABLE tablename;</span>     - Available in recovery mode</div>
+                <div class="mb-1"><span class="text-yellow-400">OPTIMIZE TABLE tablename;</span>   - Available in recovery mode</div>
+            </div>
+            <div class="text-blue-400 mt-2">For more information, type 'help contents'</div>
+        `;
+    }
+
+    clearTerminal() {
+        const terminalOutput = document.getElementById('terminal-output');
+        terminalOutput.innerHTML = `
+            <div class="text-blue-400">MySQL [CriticalBusiness_DB]> </div>
+            <div class="text-gray-400 mb-2">Terminal cleared. Emergency recovery mode active.</div>
+            <div class="text-gray-400 mb-4">Type 'help;' for available commands.</div>
+        `;
+    }
+
+    addToCommandHistory(command) {
+        if (!this.commandHistory) this.commandHistory = [];
+        this.commandHistory.push(command);
+        this.commandHistoryIndex = this.commandHistory.length;
     }
 
     proceedToBackup() {
