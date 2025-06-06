@@ -1,3 +1,10 @@
+// Import cloud computing modules for Room2
+import './cloud-computing/traffic-manager.js';
+import './cloud-computing/node-manager.js';
+import './cloud-computing/connection-manager.js';
+import './cloud-computing/input-handler.js';
+import './cloud-computing/cloud-computing.js';
+
 class EscapeTheLabGame {
     constructor() {
         this.currentRoom = 1;
@@ -158,7 +165,6 @@ class EscapeTheLabGame {
         document.getElementById('current-room').textContent = roomNumber;
         
         const roomName = this.rooms[roomNumber - 1];
-        const scriptPath = `static/js/${roomName}/${roomName}.js`;
         
         try {
             // Show loading state
@@ -169,33 +175,35 @@ class EscapeTheLabGame {
                 </div>
             `;
 
-            // Only load script if not already loaded
-            if (!this.loadedScripts.has(scriptPath)) {
-                await this.loadScript(scriptPath);
-                this.loadedScripts.add(scriptPath);
+            // For Room2 (cloud-computing), the module is already imported
+            if (roomNumber === 2) {
+                // Cloud computing modules are already loaded via imports
+                await this.sleep(100); // Small delay for UI
+            } else {
+                // For other rooms, load scripts dynamically
+                const scriptPath = `static/js/${roomName}/${roomName}.js`;
+                
+                // Only load script if not already loaded
+                if (!this.loadedScripts.has(scriptPath)) {
+                    await this.loadScript(scriptPath);
+                    this.loadedScripts.add(scriptPath);
+                    console.log(`Script loaded: ${scriptPath}`);
+                }
+                
+                // Wait for script to be parsed and class to be registered
+                await this.sleep(500);
             }
-            
-            // Wait longer for script to be parsed and class to be registered
-            await this.sleep(500);
             
             // Initialize room
             const roomClassName = `Room${roomNumber}`;
             console.log(`Looking for class: ${roomClassName}`, window[roomClassName]);
             
             if (window[roomClassName]) {
-                console.log(`Initializing ${roomClassName}`);
                 this.currentRoomInstance = new window[roomClassName](this);
                 await this.currentRoomInstance.init();
+                console.log(`Room ${roomNumber} initialized successfully`);
             } else {
-                // Try waiting a bit more and check again
-                await this.sleep(1000);
-                if (window[roomClassName]) {
-                    console.log(`Found ${roomClassName} after additional wait`);
-                    this.currentRoomInstance = new window[roomClassName](this);
-                    await this.currentRoomInstance.init();
-                } else {
-                    throw new Error(`Room class ${roomClassName} not found. Available: ${Object.keys(window).filter(k => k.startsWith('Room')).join(', ')}`);
-                }
+                throw new Error(`Room class ${roomClassName} not found`);
             }
         } catch (error) {
             console.error('Failed to load room:', error);
@@ -791,3 +799,6 @@ window.jumpToRoom = function(roomNumber) {
         console.error('Game not available for manual jump');
     }
 };
+
+// Export the game class for potential use in other modules
+export { EscapeTheLabGame };
