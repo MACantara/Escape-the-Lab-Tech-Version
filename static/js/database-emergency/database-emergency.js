@@ -21,6 +21,10 @@ class Room4 {
             'transactions': 'corrupted',
             'audit_log': 'corrupted'
         };
+        
+        // Command history
+        this.commandHistory = [];
+        this.commandHistoryIndex = -1;
     }
 
     async init() {
@@ -136,7 +140,8 @@ class Room4 {
                         <code>SHOW TABLES;</code> | 
                         <code>CHECK TABLE tablename;</code> | 
                         <code>SHOW STATUS;</code> | 
-                        <code>DESCRIBE tablename;</code>
+                        <code>DESCRIBE tablename;</code> |
+                        <code>CLEAR;</code>
                     </p>
                 </div>
             </div>
@@ -297,6 +302,17 @@ class Room4 {
             }
         });
 
+        // Command history navigation
+        document.getElementById('sql-command')?.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                this.navigateHistory('up');
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                this.navigateHistory('down');
+            }
+        });
+
         document.getElementById('clear-terminal')?.addEventListener('click', () => {
             this.clearTerminal();
         });
@@ -378,6 +394,11 @@ class Room4 {
             return this.generateSelectResult(command);
         } else if (command.includes('HELP') || command.includes('\\H')) {
             return this.generateHelpResult();
+        } else if (command.includes('CLEAR') || command === 'CLS') {
+            this.clearTerminal();
+            return '';
+        } else if (command.includes('HISTORY')) {
+            return this.generateHistoryResult();
         } else {
             return '<div class="text-red-400">ERROR 1064 (42000): Command not recognized or not safe in recovery mode</div><div class="text-gray-400">Type \'help;\' for available emergency commands.</div>';
         }
@@ -519,11 +540,35 @@ class Room4 {
                 <div class="mb-1"><span class="text-green-400">DESCRIBE tablename;</span>         - Show table structure</div>
                 <div class="mb-1"><span class="text-green-400">SHOW STATUS;</span>                - Display server status variables</div>
                 <div class="mb-1"><span class="text-green-400">SELECT COUNT(*) FROM table;</span> - Count rows (if accessible)</div>
+                <div class="mb-1"><span class="text-green-400">CLEAR;</span>                      - Clear terminal history</div>
+                <div class="mb-1"><span class="text-green-400">HISTORY;</span>                    - Show command history</div>
                 <div class="mb-1"><span class="text-yellow-400">REPAIR TABLE tablename;</span>     - Available in recovery mode</div>
                 <div class="mb-1"><span class="text-yellow-400">OPTIMIZE TABLE tablename;</span>   - Available in recovery mode</div>
             </div>
-            <div class="text-blue-400 mt-2">For more information, type 'help contents'</div>
+            <div class="text-blue-400 mt-2">Use ↑↓ arrow keys to navigate command history</div>
         `;
+    }
+
+    generateHistoryResult() {
+        if (this.commandHistory.length === 0) {
+            return '<div class="text-gray-400">No commands in history</div>';
+        }
+
+        let result = `
+            <div class="text-cyan-400">Command History (${this.commandHistory.length} commands):</div>
+            <div class="text-gray-300 mt-2">
+        `;
+        
+        this.commandHistory.forEach((cmd, index) => {
+            result += `<div class="mb-1"><span class="text-yellow-400">${index + 1}:</span> <span class="text-gray-200">${cmd}</span></div>`;
+        });
+
+        result += `
+            </div>
+            <div class="text-blue-400 mt-2">Use ↑↓ keys to navigate history or 'CLEAR;' to reset</div>
+        `;
+
+        return result;
     }
 
     clearTerminal() {
@@ -533,12 +578,58 @@ class Room4 {
             <div class="text-gray-400 mb-2">Terminal cleared. Emergency recovery mode active.</div>
             <div class="text-gray-400 mb-4">Type 'help;' for available commands.</div>
         `;
+        
+        // Clear command history
+        this.commandHistory = [];
+        this.commandHistoryIndex = -1;
+        
+        // Show confirmation
+        const clearConfirm = document.createElement('div');
+        clearConfirm.className = 'text-green-400 mb-2';
+        clearConfirm.textContent = 'Terminal and command history cleared.';
+        terminalOutput.appendChild(clearConfirm);
     }
 
     addToCommandHistory(command) {
-        if (!this.commandHistory) this.commandHistory = [];
+        // Don't add empty commands or duplicate consecutive commands
+        if (!command.trim() || (this.commandHistory.length > 0 && this.commandHistory[this.commandHistory.length - 1] === command)) {
+            return;
+        }
+        
         this.commandHistory.push(command);
         this.commandHistoryIndex = this.commandHistory.length;
+        
+        // Limit history to last 50 commands
+        if (this.commandHistory.length > 50) {
+            this.commandHistory.shift();
+            this.commandHistoryIndex = this.commandHistory.length;
+        }
+    }
+
+    navigateHistory(direction) {
+        const sqlInput = document.getElementById('sql-command');
+        
+        if (this.commandHistory.length === 0) return;
+        
+        if (direction === 'up') {
+            if (this.commandHistoryIndex > 0) {
+                this.commandHistoryIndex--;
+                sqlInput.value = this.commandHistory[this.commandHistoryIndex];
+            }
+        } else if (direction === 'down') {
+            if (this.commandHistoryIndex < this.commandHistory.length - 1) {
+                this.commandHistoryIndex++;
+                sqlInput.value = this.commandHistory[this.commandHistoryIndex];
+            } else {
+                this.commandHistoryIndex = this.commandHistory.length;
+                sqlInput.value = '';
+            }
+        }
+        
+        // Move cursor to end
+        setTimeout(() => {
+            sqlInput.setSelectionRange(sqlInput.value.length, sqlInput.value.length);
+        }, 0);
     }
 
     proceedToBackup() {
