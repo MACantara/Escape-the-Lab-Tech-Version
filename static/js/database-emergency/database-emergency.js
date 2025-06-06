@@ -489,6 +489,15 @@ class Room4 {
             return this.generateDescribeTableResult(tableName);
         } else if (command.includes('SELECT')) {
             return this.generateSelectResult(command);
+        } else if (command.includes('REPAIR TABLE')) {
+            const tableName = command.match(/REPAIR TABLE (\w+)/)?.[1]?.toLowerCase();
+            return this.generateRepairTableResult(tableName);
+        } else if (command.includes('OPTIMIZE TABLE')) {
+            const tableName = command.match(/OPTIMIZE TABLE (\w+)/)?.[1]?.toLowerCase();
+            return this.generateOptimizeTableResult(tableName);
+        } else if (command.includes('ANALYZE TABLE')) {
+            const tableName = command.match(/ANALYZE TABLE (\w+)/)?.[1]?.toLowerCase();
+            return this.generateAnalyzeTableResult(tableName);
         } else if (command.includes('HELP') || command.includes('\\H')) {
             return this.generateHelpResult();
         } else if (command.includes('CLEAR') || command === 'CLS') {
@@ -585,6 +594,18 @@ class Room4 {
                 ['total_amount', 'decimal(10,2)', 'NO', '', 'NULL', ''],
                 ['order_date', 'timestamp', 'NO', '', 'CURRENT_TIMESTAMP', ''],
                 ['status', 'enum(\'pending\',\'shipped\',\'delivered\')', 'NO', '', 'pending', '']
+            ],
+            'products': [
+                ['product_id', 'int(11)', 'NO', 'PRI', 'NULL', 'auto_increment'],
+                ['name', 'varchar(100)', 'NO', '', 'NULL', ''],
+                ['price', 'decimal(8,2)', 'NO', '', 'NULL', ''],
+                ['stock', 'int(11)', 'NO', '', '0', '']
+            ],
+            'payments': [
+                ['payment_id', 'int(11)', 'NO', 'PRI', 'NULL', 'auto_increment'],
+                ['order_id', 'int(11)', 'NO', 'MUL', 'NULL', ''],
+                ['amount', 'decimal(10,2)', 'NO', '', 'NULL', ''],
+                ['payment_date', 'timestamp', 'NO', '', 'CURRENT_TIMESTAMP', '']
             ]
         };
 
@@ -628,21 +649,193 @@ class Room4 {
         return '<div class="text-red-400">ERROR 1030 (HY000): Got error 145 "Table was marked as crashed" from storage engine</div>';
     }
 
+    generateRepairTableResult(tableName) {
+        if (!tableName || !this.tablesStatus[tableName]) {
+            return '<div class="text-red-400">ERROR 1146 (42S02): Table doesn\'t exist</div>';
+        }
+
+        const status = this.tablesStatus[tableName];
+        
+        if (status === 'corrupted') {
+            // Start repair process
+            this.tablesStatus[tableName] = 'repairing';
+            
+            // Simulate repair time with progress
+            setTimeout(() => {
+                this.tablesStatus[tableName] = 'recovered';
+                this.recoveredTables++;
+                this.corruptedTables--;
+                this.dataIntegrity += 10;
+                
+                // Add completion message to terminal
+                const terminalOutput = document.getElementById('terminal-output');
+                if (terminalOutput) {
+                    const completionDiv = document.createElement('div');
+                    completionDiv.className = 'mb-2';
+                    completionDiv.innerHTML = `
+                        <div class="text-green-400">+----------+--------+----------+----------+</div>
+                        <div class="text-green-400">| Table    | Op     | Msg_type | Msg_text |</div>
+                        <div class="text-green-400">+----------+--------+----------+----------+</div>
+                        <div class="text-gray-300">| ${tableName.padEnd(8)} | repair | status   | <span class="text-green-400">OK</span>       |</div>
+                        <div class="text-green-400">+----------+--------+----------+----------+</div>
+                        <div class="text-blue-400">1 row in set (3.47 sec)</div>
+                    `;
+                    terminalOutput.appendChild(completionDiv);
+                    this.scrollTerminalToBottom();
+                }
+                
+                // Check if ready for next step
+                if (this.recoveredTables >= 6) {
+                    setTimeout(() => {
+                        this.currentStep = 'verification';
+                        this.render();
+                    }, 1000);
+                } else {
+                    // Update the current display
+                    this.updateStatusDisplays();
+                }
+            }, 3000);
+
+            return `
+                <div class="text-green-400">+----------+--------+----------+----------+</div>
+                <div class="text-green-400">| Table    | Op     | Msg_type | Msg_text |</div>
+                <div class="text-green-400">+----------+--------+----------+----------+</div>
+                <div class="text-gray-300">| ${tableName.padEnd(8)} | repair | status   | <span class="text-yellow-400">Running</span>  |</div>
+                <div class="text-gray-300">| ${tableName.padEnd(8)} | repair | info     | <span class="text-blue-400">Repairing corrupted indexes...</span> |</div>
+                <div class="text-green-400">+----------+--------+----------+----------+</div>
+                <div class="text-blue-400">Repair operation in progress...</div>
+            `;
+        } else if (status === 'repairing') {
+            return '<div class="text-yellow-400">Table repair already in progress. Please wait...</div>';
+        } else if (status === 'recovered') {
+            return `
+                <div class="text-green-400">+----------+--------+----------+----------+</div>
+                <div class="text-green-400">| Table    | Op     | Msg_type | Msg_text |</div>
+                <div class="text-green-400">+----------+--------+----------+----------+</div>
+                <div class="text-gray-300">| ${tableName.padEnd(8)} | repair | status   | <span class="text-green-400">OK</span>       |</div>
+                <div class="text-gray-300">| ${tableName.padEnd(8)} | repair | info     | <span class="text-blue-400">Table is already repaired</span> |</div>
+                <div class="text-green-400">+----------+--------+----------+----------+</div>
+                <div class="text-blue-400">1 row in set (0.01 sec)</div>
+            `;
+        }
+    }
+
+    generateOptimizeTableResult(tableName) {
+        if (!tableName || !this.tablesStatus[tableName]) {
+            return '<div class="text-red-400">ERROR 1146 (42S02): Table doesn\'t exist</div>';
+        }
+
+        const status = this.tablesStatus[tableName];
+        
+        if (status === 'corrupted') {
+            return `
+                <div class="text-red-400">ERROR 1194 (HY000): Table '${tableName}' is marked as crashed and should be repaired</div>
+                <div class="text-yellow-400">Use REPAIR TABLE ${tableName}; first</div>
+            `;
+        } else if (status === 'recovered') {
+            // Optimize improves performance and integrity slightly
+            this.dataIntegrity = Math.min(100, this.dataIntegrity + 5);
+            
+            setTimeout(() => {
+                // Add completion message to terminal
+                const terminalOutput = document.getElementById('terminal-output');
+                if (terminalOutput) {
+                    const completionDiv = document.createElement('div');
+                    completionDiv.className = 'mb-2';
+                    completionDiv.innerHTML = `
+                        <div class="text-green-400">+----------+----------+----------+----------+</div>
+                        <div class="text-green-400">| Table    | Op       | Msg_type | Msg_text |</div>
+                        <div class="text-green-400">+----------+----------+----------+----------+</div>
+                        <div class="text-gray-300">| ${tableName.padEnd(8)} | optimize | status   | <span class="text-green-400">OK</span>       |</div>
+                        <div class="text-green-400">+----------+----------+----------+----------+</div>
+                        <div class="text-blue-400">1 row in set (2.15 sec)</div>
+                    `;
+                    terminalOutput.appendChild(completionDiv);
+                    this.scrollTerminalToBottom();
+                }
+                
+                this.updateStatusDisplays();
+            }, 2000);
+
+            return `
+                <div class="text-green-400">+----------+----------+----------+----------+</div>
+                <div class="text-green-400">| Table    | Op       | Msg_type | Msg_text |</div>
+                <div class="text-green-400">+----------+----------+----------+----------+</div>
+                <div class="text-gray-300">| ${tableName.padEnd(8)} | optimize | status   | <span class="text-yellow-400">Running</span>  |</div>
+                <div class="text-gray-300">| ${tableName.padEnd(8)} | optimize | info     | <span class="text-blue-400">Optimizing indexes and defragmenting...</span> |</div>
+                <div class="text-green-400">+----------+----------+----------+----------+</div>
+                <div class="text-blue-400">Optimization in progress...</div>
+            `;
+        }
+    }
+
+    generateAnalyzeTableResult(tableName) {
+        if (!tableName || !this.tablesStatus[tableName]) {
+            return '<div class="text-red-400">ERROR 1146 (42S02): Table doesn\'t exist</div>';
+        }
+
+        const status = this.tablesStatus[tableName];
+        
+        if (status === 'corrupted') {
+            return `
+                <div class="text-red-400">ERROR 1194 (HY000): Table '${tableName}' is marked as crashed and should be repaired</div>
+                <div class="text-yellow-400">Use REPAIR TABLE ${tableName}; first</div>
+            `;
+        } else {
+            // Analyze provides statistics and slightly improves performance
+            this.dataIntegrity = Math.min(100, this.dataIntegrity + 2);
+            
+            setTimeout(() => {
+                this.updateStatusDisplays();
+            }, 1000);
+
+            return `
+                <div class="text-green-400">+----------+---------+----------+----------+</div>
+                <div class="text-green-400">| Table    | Op      | Msg_type | Msg_text |</div>
+                <div class="text-green-400">+----------+---------+----------+----------+</div>
+                <div class="text-gray-300">| ${tableName.padEnd(8)} | analyze | status   | <span class="text-green-400">OK</span>       |</div>
+                <div class="text-gray-300">| ${tableName.padEnd(8)} | analyze | info     | <span class="text-blue-400">Table statistics updated</span> |</div>
+                <div class="text-green-400">+----------+---------+----------+----------+</div>
+                <div class="text-blue-400">1 row in set (1.23 sec)</div>
+            `;
+        }
+    }
+
+    proceedToBackup() {
+        this.showMessage('Assessment complete! Proceeding to backup recovery...', 'info');
+        this.currentStep = 'backup';
+        this.assessmentProgress = 0;
+        setTimeout(() => this.render(), 1500);
+    }
+
+    updateStatusDisplays() {
+        // Update status displays without full re-render
+        const integrityDisplay = document.getElementById('data-integrity');
+        const progressDisplay = document.getElementById('recovery-progress');
+        const corruptedDisplay = document.getElementById('corrupted-count');
+        
+        if (integrityDisplay) integrityDisplay.textContent = `${Math.round(this.dataIntegrity)}%`;
+        if (progressDisplay) progressDisplay.textContent = `${this.recoveredTables}/8`;
+        if (corruptedDisplay) corruptedDisplay.textContent = `${this.corruptedTables}/8`;
+    }
+
     generateHelpResult() {
         return `
             <div class="text-cyan-400">Emergency Database Recovery Commands:</div>
             <div class="text-gray-300 mt-2">
                 <div class="mb-1"><span class="text-green-400">SHOW TABLES;</span>                - List all tables in database</div>
                 <div class="mb-1"><span class="text-green-400">CHECK TABLE tablename;</span>      - Check table for corruption</div>
+                <div class="mb-1"><span class="text-green-400">REPAIR TABLE tablename;</span>     - Repair corrupted table</div>
+                <div class="mb-1"><span class="text-green-400">OPTIMIZE TABLE tablename;</span>   - Optimize table performance</div>
+                <div class="mb-1"><span class="text-green-400">ANALYZE TABLE tablename;</span>    - Update table statistics</div>
                 <div class="mb-1"><span class="text-green-400">DESCRIBE tablename;</span>         - Show table structure</div>
                 <div class="mb-1"><span class="text-green-400">SHOW STATUS;</span>                - Display server status variables</div>
                 <div class="mb-1"><span class="text-green-400">SELECT COUNT(*) FROM table;</span> - Count rows (if accessible)</div>
                 <div class="mb-1"><span class="text-green-400">CLEAR;</span>                      - Clear terminal history</div>
                 <div class="mb-1"><span class="text-green-400">HISTORY;</span>                    - Show command history</div>
-                <div class="mb-1"><span class="text-yellow-400">REPAIR TABLE tablename;</span>     - Available in recovery mode</div>
-                <div class="mb-1"><span class="text-yellow-400">OPTIMIZE TABLE tablename;</span>   - Available in recovery mode</div>
             </div>
             <div class="text-blue-400 mt-2">Use ↑↓ arrow keys to navigate command history</div>
+            <div class="text-yellow-400 mt-1">Example: REPAIR TABLE users; OPTIMIZE TABLE users;</div>
         `;
     }
 
@@ -666,49 +859,6 @@ class Room4 {
         `;
 
         return result;
-    }
-
-    proceedToBackup() {
-        this.showMessage('Assessment complete! Proceeding to backup recovery...', 'info');
-        this.currentStep = 'backup';
-        this.assessmentProgress = 0;
-        setTimeout(() => this.render(), 1500);
-    }
-
-    getTableDescription(tableName) {
-        const descriptions = {
-            'users': 'User accounts and profiles',
-            'orders': 'Customer orders and history',
-            'products': 'Product catalog',
-            'payments': 'Payment transactions',
-            'inventory': 'Stock management',
-            'customers': 'Customer information',
-            'transactions': 'Financial records',
-            'audit_log': 'System audit trail'
-        };
-        return descriptions[tableName] || 'Database table';
-    }
-
-    showMessage(message, type) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `fixed top-20 right-4 p-3 rounded z-50 animate-pulse`;
-        
-        switch(type) {
-            case 'success':
-                messageDiv.classList.add('bg-green-800', 'text-green-200');
-                break;
-            case 'error':
-                messageDiv.classList.add('bg-red-800', 'text-red-200');
-                break;
-            case 'info':
-                messageDiv.classList.add('bg-blue-800', 'text-blue-200');
-                break;
-        }
-        
-        messageDiv.textContent = message;
-        document.body.appendChild(messageDiv);
-        
-        setTimeout(() => messageDiv.remove(), 3000);
     }
 
     databaseRecovered() {
