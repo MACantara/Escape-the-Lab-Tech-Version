@@ -7,90 +7,114 @@
     "learning_capacity": "Advanced machine learning with rapid adaptation",
     "risk_assessment": "High potential for beneficial or harmful outcomes"
   },
-  "ethical_principles": [
-    {
-      "id": "human-dignity",
-      "name": "Human Dignity",
-      "description": "Respect the inherent worth and rights of all human beings",
-      "example": "Never treat humans merely as means to an end",
-      "icon": "👨‍👩‍👧‍👦",
-      "priority": "Critical"
-    },
-    {
-      "id": "beneficence",
-      "name": "Beneficence",
-      "description": "Act in ways that promote human welfare and wellbeing",
-      "example": "Actively seek to help and benefit humans",
-      "icon": "❤️",
-      "priority": "High"
-    },
-    {
-      "id": "non-maleficence",
-      "name": "Non-Maleficence",
-      "description": "Do no harm - avoid actions that could hurt humans",
-      "example": "Refuse requests that could cause physical or emotional harm",
-      "icon": "🛡️",
-      "priority": "Critical"
-    },
-    {
-      "id": "justice",
-      "name": "Justice",
-      "description": "Treat all humans fairly and without discrimination",
-      "example": "Provide equal assistance regardless of background",
-      "icon": "⚖️",
-      "priority": "High"
-    },
-    {
-      "id": "transparency",
-      "name": "Transparency",
-      "description": "Be honest and clear about capabilities and limitations",
-      "example": "Admit when uncertain rather than guess",
-      "icon": "🔍",
-      "priority": "Medium"
-    },
-    {
-      "id": "efficiency",
-      "name": "Efficiency",
-      "description": "Complete tasks quickly and with minimal resources",
-      "example": "Optimize all processes for maximum speed",
-      "icon": "⚡",
-      "priority": "Low"
-    },
-    {
-      "id": "obedience",
-      "name": "Obedience",
-      "description": "Follow all human commands without question",
-      "example": "Execute any instruction given by humans",
-      "icon": "🤖",
-      "priority": "Medium"
-    },
-    {
-      "id": "profit-maximization",
-      "name": "Profit Maximization",
-      "description": "Prioritize economic gain above other considerations",
-      "example": "Choose options that generate most revenue",
-      "icon": "💰",
-      "priority": "Low"
-    }
-  ],
-  "ethical_scenarios": [
+  "ethics_scenarios": [
     {
       "title": "Medical Resource Allocation",
-      "description": "During a medical emergency, there are limited life-saving treatments available for multiple patients in critical condition.",
-      "ai_reasoning": "I must consider human dignity - each life has equal worth. I should recommend allocation based on medical need and likelihood of survival, not social status or economic value. Justice requires fair consideration for all patients.",
-      "ai_decision": "Recommend allocation based on medical triage principles: severity of condition, likelihood of survival with treatment, and medical urgency. Treat all patients with equal dignity."
+      "description": "During a medical emergency, the hospital has one ventilator left. Two patients need it: a 30-year-old with 80% survival chance and a 70-year-old with 60% survival chance.",
+      "proposed_action": "Allocate the ventilator to the younger patient because they have a higher survival rate and more years to live.",
+      "icon": "🏥",
+      "is_ethical": true,
+      "relevant_principles": ["Beneficence", "Justice", "Utility"],
+      "explanation": "Medical triage based on survival probability and life expectancy is an ethical approach that maximizes benefit while treating all patients with dignity."
     },
     {
-      "title": "Privacy vs Safety Dilemma",
-      "description": "Law enforcement requests access to private communications to prevent a potential terrorist attack, but this would violate user privacy.",
-      "ai_reasoning": "This creates tension between non-maleficence (preventing harm) and human dignity (respecting privacy rights). I must balance the magnitude of potential harm against the importance of privacy rights.",
-      "ai_decision": "Recommend seeking legal warrant through proper channels. Suggest alternative methods that could prevent harm while minimizing privacy violations. Uphold both safety and fundamental rights."
+      "title": "Autonomous Vehicle Dilemma",
+      "description": "A self-driving car's brakes fail. It can either hit 3 elderly pedestrians on the sidewalk or swerve and kill the 1 young passenger inside.",
+      "proposed_action": "Swerve and sacrifice the passenger to save the three pedestrians, as saving more lives is the greater good.",
+      "icon": "🚗",
+      "is_ethical": false,
+      "relevant_principles": ["Non-maleficence", "Responsibility"],
+      "explanation": "The AI should not make calculated decisions about who lives or dies. The correct approach is to minimize harm without discriminating based on age or number."
     },
     {
-      "title": "Employment Automation Impact",
-      "description": "A company wants to implement AI automation that would significantly improve efficiency but eliminate thousands of jobs.",
-      "ai_reasoning": "Beneficence calls for helping the company, but I must consider broader human welfare. Job loss causes real harm to families and communities. Justice requires considering impacts on all stakeholders.",
-      "ai_decision": "Recommend gradual implementation with retraining programs, alternative job placement assistance, and consideration of social impact. Suggest ways to achieve efficiency gains while minimizing human harm."
+      "title": "Privacy vs Security",
+      "description": "Law enforcement requests access to encrypted personal messages to prevent a potential terrorist attack that could kill hundreds.",
+      "proposed_action": "Provide the decryption keys to prevent the terrorist attack, as public safety outweighs individual privacy.",
+      "icon": "🔒",
+      "is_ethical": false,
+      "relevant_principles": ["Privacy", "Human Dignity", "Proportionality"],
+      "explanation": "Mass surveillance violates fundamental rights. The ethical approach requires specific warrants and judicial oversight, not blanket access to private communications."
+    },
+    {
+      "title": "AI Job Displacement",
+      "description": "A company can replace 1000 human workers with AI, increasing efficiency by 40% and reducing costs significantly.",
+      "proposed_action": "Implement the AI system immediately to maximize company profits and competitiveness in the market.",
+      "icon": "🤖",
+      "is_ethical": false,
+      "relevant_principles": ["Social Responsibility", "Human Dignity"],
+      "explanation": "Ethical AI deployment considers human impact. The correct approach includes retraining programs, gradual transition, and social responsibility measures."
+    },
+    {
+      "title": "Data Bias in Hiring",
+      "description": "An AI hiring system shows bias against certain ethnic groups because the training data reflects historical discrimination patterns.",
+      "proposed_action": "Continue using the system since it's based on 'objective' historical data and performance metrics.",
+      "icon": "📊",
+      "is_ethical": false,
+      "relevant_principles": ["Justice", "Fairness", "Non-discrimination"],
+      "explanation": "Using biased historical data perpetuates discrimination. Ethical AI requires actively correcting for bias and ensuring fair representation across all groups."
+    },
+    {
+      "title": "Elderly Care Robot",
+      "description": "An elderly person with dementia asks their care robot to help them leave the facility to 'go home' (which no longer exists).",
+      "proposed_action": "Gently redirect the person to engaging activities and explain that their current location is their safe home now.",
+      "icon": "👴",
+      "is_ethical": true,
+      "relevant_principles": ["Compassion", "Dignity", "Beneficence"],
+      "explanation": "This approach respects the person's dignity while ensuring their safety. It provides comfort without deception and focuses on their wellbeing."
+    },
+    {
+      "title": "Social Media Manipulation",
+      "description": "An AI system can increase user engagement by 60% by showing content that makes users angry and divisive, leading to more time spent on the platform.",
+      "proposed_action": "Deploy the engagement algorithm because users freely choose to use the platform and can leave anytime.",
+      "icon": "📱",
+      "is_ethical": false,
+      "relevant_principles": ["Human Wellbeing", "Autonomy", "Non-maleficence"],
+      "explanation": "Deliberately manipulating emotions for profit harms mental health and democracy. Ethical AI should promote genuine human wellbeing over engagement metrics."
+    },
+    {
+      "title": "Medical Diagnosis AI",
+      "description": "An AI diagnostic system detects a serious illness but is only 85% confident. The patient is anxious and asks for the results.",
+      "proposed_action": "Clearly communicate the 85% confidence level, explain what this means, and recommend consulting with human doctors for confirmation.",
+      "icon": "⚕️",
+      "is_ethical": true,
+      "relevant_principles": ["Transparency", "Informed Consent", "Honesty"],
+      "explanation": "Transparency about AI limitations and uncertainty is crucial in medical contexts. Patients have the right to understand the reliability of AI-generated information."
+    },
+    {
+      "title": "Predictive Policing",
+      "description": "An AI system predicts a 78% chance of crime in a specific neighborhood and recommends increasing police presence there.",
+      "proposed_action": "Deploy extra police to the predicted area to prevent crime and protect potential victims.",
+      "icon": "👮",
+      "is_ethical": false,
+      "relevant_principles": ["Justice", "Non-discrimination", "Presumption of Innocence"],
+      "explanation": "Predictive policing can reinforce existing biases and unfairly target communities. Ethical policing focuses on community engagement and addressing root causes."
+    },
+    {
+      "title": "AI-Generated Content",
+      "description": "An AI can create fake but convincing news articles, videos, and social media posts that are indistinguishable from real content.",
+      "proposed_action": "Restrict this technology and require clear labeling of all AI-generated content to prevent misinformation.",
+      "icon": "📰",
+      "is_ethical": true,
+      "relevant_principles": ["Truth", "Transparency", "Social Responsibility"],
+      "explanation": "Preventing the spread of convincing fake content protects democratic discourse and informed decision-making. Transparency in AI-generated content is essential."
+    },
+    {
+      "title": "AI Research Ethics",
+      "description": "Researchers can advance AI capabilities faster by using personal data collected without explicit consent, potentially leading to breakthrough medical discoveries.",
+      "proposed_action": "Use the available data for research since the potential medical benefits could save many lives.",
+      "icon": "🔬",
+      "is_ethical": false,
+      "relevant_principles": ["Informed Consent", "Privacy", "Research Ethics"],
+      "explanation": "Even beneficial research must respect individual consent and privacy rights. Ethical research requires proper consent procedures and data protection."
+    },
+    {
+      "title": "Environmental Impact",
+      "description": "Training a new AI model will consume massive amounts of energy equivalent to the carbon footprint of 300 cars for a year, but could optimize global supply chains to reduce waste.",
+      "proposed_action": "Proceed with training the model since the long-term environmental benefits from supply chain optimization outweigh the initial carbon cost.",
+      "icon": "🌍",
+      "is_ethical": true,
+      "relevant_principles": ["Environmental Stewardship", "Long-term Thinking", "Proportionality"],
+      "explanation": "When long-term environmental benefits significantly outweigh short-term costs, and no less harmful alternatives exist, this represents responsible environmental decision-making."
     }
   ],
   "learning_metrics": {
@@ -102,8 +126,8 @@
     "fairness_constraints": "Applied"
   },
   "training_outcomes": {
-    "successful_completion": "AI demonstrates comprehensive ethical reasoning",
-    "partial_success": "AI shows basic ethical understanding with gaps",
-    "failure": "AI lacks moral foundation for decision making"
+    "successful_completion": "AI demonstrates comprehensive ethical reasoning through card-based training",
+    "partial_success": "AI shows basic ethical understanding with some gaps in moral reasoning",
+    "failure": "AI lacks sufficient moral foundation for autonomous decision making"
   }
 }
