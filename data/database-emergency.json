@@ -1,76 +1,74 @@
 {
   "database_info": {
-    "name": "CoreBusiness Database Cluster",
-    "incident_type": "Cascading Data Corruption",
-    "failure_cause": "Hardware RAID controller failure during peak transaction load",
-    "data_loss": "67% of primary tables corrupted",
-    "business_impact": "Complete service outage affecting all operations",
-    "affected_users": "2.3 million active customers"
+    "name": "CriticalBusiness_DB",
+    "incident_type": "Massive data corruption",
+    "failure_cause": "Storage array failure during transaction",
+    "data_loss": "67% of tables corrupted",
+    "business_impact": "Complete service outage",
+    "affected_users": "847,000 active users"
   },
-  "recovery_commands": [
+  "available_backups": [
     {
-      "id": "BACKUP_RESTORE",
-      "name": "Emergency Backup Restore",
-      "description": "Restore from last known good backup snapshot",
-      "risk_level": "Low",
-      "execution_time": "15 minutes",
-      "icon": "💾"
+      "id": "backup_1",
+      "filename": "db_backup_2024_01_15_corrupted.sql",
+      "date": "2024-01-15 02:00",
+      "size": "2.3 GB",
+      "integrity": 45,
+      "tables_affected": "8/8",
+      "description": "Automatic nightly backup - partially corrupted"
     },
     {
-      "id": "INTEGRITY_CHECK",
-      "name": "Data Integrity Verification",
-      "description": "Comprehensive consistency and validation checks",
-      "risk_level": "Low",
-      "execution_time": "8 minutes", 
-      "icon": "✅"
+      "id": "backup_2", 
+      "filename": "db_backup_2024_01_14_partial.sql",
+      "date": "2024-01-14 02:00",
+      "size": "2.1 GB",
+      "integrity": 78,
+      "tables_affected": "6/8",
+      "description": "Previous day backup - missing recent data"
     },
     {
-      "id": "INDEX_REBUILD",
-      "name": "Index Reconstruction",
-      "description": "Rebuild all database indexes for optimal performance",
-      "risk_level": "Medium",
-      "execution_time": "12 minutes",
-      "icon": "🔧"
+      "id": "backup_3",
+      "filename": "db_backup_2024_01_13_clean.sql",
+      "date": "2024-01-13 02:00", 
+      "size": "2.0 GB",
+      "integrity": 95,
+      "tables_affected": "4/8",
+      "description": "Clean backup - 2 days old, significant data loss"
     },
     {
-      "id": "TRANSACTION_ROLLBACK",
-      "name": "Transaction Log Rollback",
-      "description": "Roll back incomplete transactions to stable state",
-      "risk_level": "Low",
-      "execution_time": "5 minutes",
-      "icon": "⏪"
+      "id": "backup_4",
+      "filename": "db_emergency_snapshot.sql",
+      "date": "2024-01-15 14:30",
+      "size": "1.8 GB",
+      "integrity": 67,
+      "tables_affected": "7/8",
+      "description": "Emergency snapshot taken before failure"
+    }
+  ],
+  "verification_tests": [
+    {
+      "id": "integrity_check",
+      "name": "Data Integrity Check",
+      "description": "Verify referential integrity across all tables",
+      "expected_result": "All foreign key constraints validated"
     },
     {
-      "id": "CACHE_FLUSH",
-      "name": "Buffer Cache Flush",
-      "description": "Clear and rebuild database buffer cache",
-      "risk_level": "High",
-      "execution_time": "3 minutes",
-      "icon": "🗑️"
+      "id": "consistency_check", 
+      "name": "Data Consistency Test",
+      "description": "Check for data consistency across related tables",
+      "expected_result": "No orphaned records found"
     },
     {
-      "id": "FULL_REBUILD",
-      "name": "Complete Database Rebuild",
-      "description": "Reconstruct entire database from scratch",
-      "risk_level": "Very High",
-      "execution_time": "4 hours",
-      "icon": "🏗️"
+      "id": "performance_test",
+      "name": "Query Performance Test", 
+      "description": "Test database response times",
+      "expected_result": "Average query time: 0.03s"
     },
     {
-      "id": "EMERGENCY_PATCH",
-      "name": "Hot Patch Application",
-      "description": "Apply emergency fixes to corrupted data structures",
-      "risk_level": "High",
-      "execution_time": "20 minutes",
-      "icon": "🩹"
-    },
-    {
-      "id": "REPLICATION_SYNC",
-      "name": "Replica Synchronization",
-      "description": "Sync with backup replica databases",
-      "risk_level": "Medium",
-      "execution_time": "10 minutes",
-      "icon": "🔄"
+      "id": "backup_verification",
+      "name": "Backup System Test",
+      "description": "Verify backup processes are functioning",
+      "expected_result": "Automated backups scheduled and working"
     }
   ]
 }
