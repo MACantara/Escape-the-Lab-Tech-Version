@@ -1,0 +1,76 @@
+{
+  "database_info": {
+    "name": "CoreBusiness Database Cluster",
+    "incident_type": "Cascading Data Corruption",
+    "failure_cause": "Hardware RAID controller failure during peak transaction load",
+    "data_loss": "67% of primary tables corrupted",
+    "business_impact": "Complete service outage affecting all operations",
+    "affected_users": "2.3 million active customers"
+  },
+  "recovery_commands": [
+    {
+      "id": "BACKUP_RESTORE",
+      "name": "Emergency Backup Restore",
+      "description": "Restore from last known good backup snapshot",
+      "risk_level": "Low",
+      "execution_time": "15 minutes",
+      "icon": "💾"
+    },
+    {
+      "id": "INTEGRITY_CHECK",
+      "name": "Data Integrity Verification",
+      "description": "Comprehensive consistency and validation checks",
+      "risk_level": "Low",
+      "execution_time": "8 minutes", 
+      "icon": "✅"
+    },
+    {
+      "id": "INDEX_REBUILD",
+      "name": "Index Reconstruction",
+      "description": "Rebuild all database indexes for optimal performance",
+      "risk_level": "Medium",
+      "execution_time": "12 minutes",
+      "icon": "🔧"
+    },
+    {
+      "id": "TRANSACTION_ROLLBACK",
+      "name": "Transaction Log Rollback",
+      "description": "Roll back incomplete transactions to stable state",
+      "risk_level": "Low",
+      "execution_time": "5 minutes",
+      "icon": "⏪"
+    },
+    {
+      "id": "CACHE_FLUSH",
+      "name": "Buffer Cache Flush",
+      "description": "Clear and rebuild database buffer cache",
+      "risk_level": "High",
+      "execution_time": "3 minutes",
+      "icon": "🗑️"
+    },
+    {
+      "id": "FULL_REBUILD",
+      "name": "Complete Database Rebuild",
+      "description": "Reconstruct entire database from scratch",
+      "risk_level": "Very High",
+      "execution_time": "4 hours",
+      "icon": "🏗️"
+    },
+    {
+      "id": "EMERGENCY_PATCH",
+      "name": "Hot Patch Application",
+      "description": "Apply emergency fixes to corrupted data structures",
+      "risk_level": "High",
+      "execution_time": "20 minutes",
+      "icon": "🩹"
+    },
+    {
+      "id": "REPLICATION_SYNC",
+      "name": "Replica Synchronization",
+      "description": "Sync with backup replica databases",
+      "risk_level": "Medium",
+      "execution_time": "10 minutes",
+      "icon": "🔄"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "system_info": {
+    "application": "CoreBusiness Financial Platform",
+    "environment": "Production",
+    "severity": "Critical - P0 Incident",
+    "impact": "Complete service outage affecting all operations",
+    "affected_users": "2.8 million active users globally",
+    "revenue_loss": "$3.2 million per hour downtime"
+  },
+  "critical_bugs": [
+    {
+      "id": "memory-leak",
+      "name": "Memory Leak",
+      "description": "Unchecked object allocation causing heap overflow",
+      "severity": "Critical",
+      "impact": "System crash",
+      "icon": "🧠"
+    },
+    {
+      "id": "null-pointer",
+      "name": "Null Pointer Exception",
+      "description": "Unvalidated object references causing crashes",
+      "severity": "Critical",
+      "impact": "Application failure",
+      "icon": "⚠️"
+    },
+    {
+      "id": "race-condition",
+      "name": "Race Condition",
+      "description": "Concurrent thread access to shared resources",
+      "severity": "Critical",
+      "impact": "Data corruption",
+      "icon": "🏃"
+    },
+    {
+      "id": "buffer-overflow",
+      "name": "Buffer Overflow",
+      "description": "Input validation bypass allowing memory corruption",
+      "severity": "Critical",
+      "impact": "Security vulnerability",
+      "icon": "💥"
+    },
+    {
+      "id": "deadlock",
+      "name": "Database Deadlock",
+      "description": "Circular dependency in transaction locks",
+      "severity": "High",
+      "impact": "Performance degradation",
+      "icon": "🔒"
+    },
+    {
+      "id": "stack-overflow",
+      "name": "Stack Overflow",
+      "description": "Recursive function calls without termination",
+      "severity": "High",
+      "impact": "Thread crashes",
+      "icon": "📚"
+    },
+    {
+      "id": "sql-injection",
+      "name": "SQL Injection Vulnerability",
+      "description": "Unsanitized database queries allowing code injection",
+      "severity": "High",
+      "impact": "Data breach risk",
+      "icon": "💉"
+    },
+    {
+      "id": "logic-error",
+      "name": "Business Logic Error",
+      "description": "Incorrect calculation in financial processing",
+      "severity": "Medium",
+      "impact": "Data inconsistency",
+      "icon": "🧮"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "incident_info": {
+    "type": "Advanced Persistent Threat (APT)",
+    "attack_vector": "Spear-phishing with zero-day exploit",
+    "severity": "Critical - Level 5",
+    "target_systems": "Financial databases and customer records",
+    "business_impact": "Potential data breach affecting 2.8M customers",
+    "threat_actor": "State-sponsored cybercriminal group"
+  },
+  "response_actions": [
+    {
+      "id": "isolate-threat",
+      "name": "Threat Isolation",
+      "description": "Quarantine affected systems and prevent lateral movement",
+      "priority": "Critical",
+      "phase": "Containment",
+      "icon": "🚫"
+    },
+    {
+      "id": "analyze-payload",
+      "name": "Malware Analysis",
+      "description": "Reverse engineer attack payload and identify IOCs",
+      "priority": "Critical",
+      "phase": "Investigation",
+      "icon": "🔍"
+    },
+    {
+      "id": "patch-vulnerability",
+      "name": "Vulnerability Remediation",
+      "description": "Apply security patches and harden exposed systems",
+      "priority": "Critical",
+      "phase": "Eradication",
+      "icon": "🔧"
+    },
+    {
+      "id": "restore-services",
+      "name": "Service Recovery",
+      "description": "Safely restore systems with enhanced monitoring",
+      "priority": "Critical",
+      "phase": "Recovery",
+      "icon": "🔄"
+    },
+    {
+      "id": "collect-forensics",
+      "name": "Digital Forensics",
+      "description": "Preserve evidence and analyze attack timeline",
+      "priority": "High",
+      "phase": "Investigation",
+      "icon": "🕵️"
+    },
+    {
+      "id": "notify-stakeholders",
+      "name": "Stakeholder Notification",
+      "description": "Inform management and regulatory bodies",
+      "priority": "High",
+      "phase": "Communication",
+      "icon": "📢"
+    },
+    {
+      "id": "threat-hunting",
+      "name": "Proactive Threat Hunting",
+      "description": "Search for additional compromise indicators",
+      "priority": "Medium",
+      "phase": "Investigation",
+      "icon": "🎯"
+    },
+    {
+      "id": "update-playbooks",
+      "name": "Playbook Enhancement",
+      "description": "Update incident response procedures",
+      "priority": "Medium",
+      "phase": "Lessons Learned",
+      "icon": "📋"
+    }
+  ]
+}

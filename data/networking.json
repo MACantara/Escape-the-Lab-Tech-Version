@@ -1,0 +1,102 @@
+{
+  "invasion_info": {
+    "threat": "Alien Cyber Incursion",
+    "origin": "Extraterrestrial Intelligence - Unknown Sector",
+    "method": "Quantum entanglement network infiltration",
+    "target": "Super Earth Defense Network",
+    "objective": "Complete planetary communication disruption",
+    "progress": "15% network penetration achieved",
+    "threat_level": "EXTINCTION CLASS"
+  },
+  "network_sectors": [
+    {
+      "name": "ORBITAL_RELAY",
+      "description": "Satellite communication array",
+      "status": "under_attack",
+      "defense_level": "Medium",
+      "icon": "🛰️",
+      "alien_presence": "Heavy"
+    },
+    {
+      "name": "PLANETARY_GRID",
+      "description": "Global communication infrastructure",
+      "status": "compromised",
+      "defense_level": "Low",
+      "icon": "🌍",
+      "alien_presence": "Moderate"
+    },
+    {
+      "name": "MILITARY_NET",
+      "description": "Defense force command network",
+      "status": "defending",
+      "defense_level": "High",
+      "icon": "⚔️",
+      "alien_presence": "Light"
+    },
+    {
+      "name": "CORE_COMMAND",
+      "description": "Super Earth central command",
+      "status": "secure",
+      "defense_level": "Maximum",
+      "icon": "🏛️",
+      "alien_presence": "None"
+    }
+  ],
+  "alien_attack_patterns": [
+    {
+      "name": "Quantum Spike",
+      "damage": 25,
+      "speed": "Fast",
+      "pattern": "Direct",
+      "icon": "⚡",
+      "description": "High-energy quantum data burst"
+    },
+    {
+      "name": "Neural Worm",
+      "damage": 15,
+      "speed": "Medium",
+      "pattern": "Weaving",
+      "icon": "🐛",
+      "description": "Self-replicating malicious code"
+    },
+    {
+      "name": "Void Pulse",
+      "damage": 35,
+      "speed": "Slow",
+      "pattern": "Heavy",
+      "icon": "💀",
+      "description": "Reality-warping data corruption"
+    },
+    {
+      "name": "Swarm Packet",
+      "damage": 10,
+      "speed": "Very Fast",
+      "pattern": "Multiple",
+      "icon": "🕷️",
+      "description": "Coordinated micro-intrusions"
+    }
+  ],
+  "shield_types": [
+    {
+      "name": "Quantum Barrier",
+      "strength": 100,
+      "recharge_rate": 15,
+      "special": "Reflects quantum attacks",
+      "icon": "🛡️"
+    },
+    {
+      "name": "Neural Firewall",
+      "strength": 80,
+      "recharge_rate": 20,
+      "special": "Immune to neural worms",
+      "icon": "🧠"
+    },
+    {
+      "name": "Void Dampener",
+      "strength": 120,
+      "recharge_rate": 10,
+      "special": "Absorbs void energy",
+      "icon": "⚫"
+    }
+  ]
+}

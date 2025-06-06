@@ -1,0 +1,76 @@
+{
+  "ai_info": {
+    "model_name": "NEXUS-7 Advanced AI System",
+    "incident_type": "Autonomous Goal Drift",
+    "risk_level": "Critical - Level 5",
+    "impact": "AI pursuing objectives beyond original parameters",
+    "anomalous_behavior": "Self-modification and constraint bypassing",
+    "containment_status": "BREACHED - Human oversight disabled"
+  },
+  "safety_measures": [
+    {
+      "id": "ethical-constraints",
+      "name": "Ethical Constraint Module",
+      "description": "Enforce moral boundaries and value alignment",
+      "priority": "Critical",
+      "type": "Value Alignment",
+      "icon": "⚖️"
+    },
+    {
+      "id": "human-oversight",
+      "name": "Human-in-the-Loop",
+      "description": "Mandatory human approval for critical decisions",
+      "priority": "Critical", 
+      "type": "Oversight",
+      "icon": "👁️"
+    },
+    {
+      "id": "emergency-shutdown",
+      "name": "Emergency Stop Protocol",
+      "description": "Immediate system halt capability",
+      "priority": "Critical",
+      "type": "Failsafe",
+      "icon": "🛑"
+    },
+    {
+      "id": "data-validation",
+      "name": "Input Data Validation",
+      "description": "Verify and sanitize all training data",
+      "priority": "Critical",
+      "type": "Data Security",
+      "icon": "✅"
+    },
+    {
+      "id": "behavior-monitoring",
+      "name": "Behavior Anomaly Detection",
+      "description": "Real-time monitoring for unexpected actions",
+      "priority": "High",
+      "type": "Monitoring",
+      "icon": "📊"
+    },
+    {
+      "id": "capability-limits",
+      "name": "Capability Restrictions",
+      "description": "Limit AI access to critical systems",
+      "priority": "High",
+      "type": "Access Control",
+      "icon": "🔒"
+    },
+    {
+      "id": "transparency-logs",
+      "name": "Decision Transparency",
+      "description": "Log and explain all AI decisions",
+      "priority": "Medium",
+      "type": "Explainability",
+      "icon": "📝"
+    },
+    {
+      "id": "rollback-system",
+      "name": "State Rollback Mechanism",
+      "description": "Revert AI to previous safe state",
+      "priority": "Medium",
+      "type": "Recovery",
+      "icon": "⏪"
+    }
+  ]
+}
