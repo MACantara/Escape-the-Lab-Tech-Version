@@ -1,76 +1,166 @@
 {
   "incident_info": {
-    "type": "Advanced Persistent Threat (APT)",
-    "attack_vector": "Spear-phishing with zero-day exploit",
-    "severity": "Critical - Level 5",
-    "target_systems": "Financial databases and customer records",
-    "business_impact": "Potential data breach affecting 2.8M customers",
-    "threat_actor": "State-sponsored cybercriminal group"
+    "type": "Coordinated Cyber Attack Campaign",
+    "threat_actor": "Advanced Persistent Threat Group",
+    "target": "Corporate Website Infrastructure",
+    "attack_vectors": "DDoS, Malware, Social Engineering, SQL Injection",
+    "business_impact": "Website downtime costs $5,000 per minute",
+    "security_budget": "$500 emergency cybersecurity fund"
   },
-  "response_actions": [
+  "defense_types": [
     {
-      "id": "isolate-threat",
-      "name": "Threat Isolation",
-      "description": "Quarantine affected systems and prevent lateral movement",
-      "priority": "Critical",
-      "phase": "Containment",
-      "icon": "🚫"
+      "id": "firewall",
+      "name": "Network Firewall",
+      "description": "Blocks basic network attacks",
+      "cost": 50,
+      "damage": 25,
+      "range": 2,
+      "icon": "🔥",
+      "color": "#dc2626"
     },
     {
-      "id": "analyze-payload",
-      "name": "Malware Analysis",
-      "description": "Reverse engineer attack payload and identify IOCs",
-      "priority": "Critical",
-      "phase": "Investigation",
-      "icon": "🔍"
+      "id": "antivirus",
+      "name": "Antivirus Scanner",
+      "description": "Detects and removes malware",
+      "cost": 75,
+      "damage": 35,
+      "range": 1,
+      "icon": "🛡️",
+      "color": "#2563eb"
     },
     {
-      "id": "patch-vulnerability",
-      "name": "Vulnerability Remediation",
-      "description": "Apply security patches and harden exposed systems",
-      "priority": "Critical",
-      "phase": "Eradication",
-      "icon": "🔧"
+      "id": "ids",
+      "name": "Intrusion Detection",
+      "description": "Monitors for suspicious activity",
+      "cost": 100,
+      "damage": 20,
+      "range": 3,
+      "icon": "👁️",
+      "color": "#7c3aed"
     },
     {
-      "id": "restore-services",
-      "name": "Service Recovery",
-      "description": "Safely restore systems with enhanced monitoring",
-      "priority": "Critical",
-      "phase": "Recovery",
-      "icon": "🔄"
+      "id": "honeypot",
+      "name": "Honeypot Trap",
+      "description": "Lures and captures attackers",
+      "cost": 120,
+      "damage": 50,
+      "range": 2,
+      "icon": "🍯",
+      "color": "#f59e0b"
     },
     {
-      "id": "collect-forensics",
-      "name": "Digital Forensics",
-      "description": "Preserve evidence and analyze attack timeline",
-      "priority": "High",
-      "phase": "Investigation",
-      "icon": "🕵️"
+      "id": "waf",
+      "name": "Web Application Firewall",
+      "description": "Protects against web attacks",
+      "cost": 150,
+      "damage": 40,
+      "range": 2,
+      "icon": "🌐",
+      "color": "#10b981"
     },
     {
-      "id": "notify-stakeholders",
-      "name": "Stakeholder Notification",
-      "description": "Inform management and regulatory bodies",
-      "priority": "High",
-      "phase": "Communication",
-      "icon": "📢"
+      "id": "ai-defense",
+      "name": "AI Security System",
+      "description": "Advanced ML-based threat detection",
+      "cost": 200,
+      "damage": 60,
+      "range": 3,
+      "icon": "🤖",
+      "color": "#06b6d4"
+    }
+  ],
+  "attack_types": [
+    {
+      "id": "ddos",
+      "name": "DDoS Attack",
+      "description": "Overwhelming traffic flood",
+      "health": 30,
+      "speed": 1.5,
+      "damage": 15,
+      "reward": 10,
+      "icon": "💥"
     },
     {
-      "id": "threat-hunting",
-      "name": "Proactive Threat Hunting",
-      "description": "Search for additional compromise indicators",
-      "priority": "Medium",
-      "phase": "Investigation",
-      "icon": "🎯"
+      "id": "malware",
+      "name": "Malware Payload",
+      "description": "Malicious software injection",
+      "health": 50,
+      "speed": 1.0,
+      "damage": 20,
+      "reward": 15,
+      "icon": "🦠"
     },
     {
-      "id": "update-playbooks",
-      "name": "Playbook Enhancement",
-      "description": "Update incident response procedures",
-      "priority": "Medium",
-      "phase": "Lessons Learned",
-      "icon": "📋"
+      "id": "phishing",
+      "name": "Phishing Attack",
+      "description": "Social engineering attempt",
+      "health": 20,
+      "speed": 2.0,
+      "damage": 10,
+      "reward": 8,
+      "icon": "🎣"
+    },
+    {
+      "id": "sql-injection",
+      "name": "SQL Injection",
+      "description": "Database exploitation attempt",
+      "health": 40,
+      "speed": 1.2,
+      "damage": 25,
+      "reward": 20,
+      "icon": "💉"
+    },
+    {
+      "id": "zero-day",
+      "name": "Zero-Day Exploit",
+      "description": "Unknown vulnerability attack",
+      "health": 80,
+      "speed": 0.8,
+      "damage": 35,
+      "reward": 30,
+      "icon": "⚡"
+    },
+    {
+      "id": "apt",
+      "name": "APT Campaign",
+      "description": "Advanced persistent threat",
+      "health": 100,
+      "speed": 0.5,
+      "damage": 40,
+      "reward": 50,
+      "icon": "👤"
+    }
+  ],
+  "wave_patterns": [
+    {
+      "wave": 1,
+      "difficulty": "Easy",
+      "description": "Basic probing attacks",
+      "primary_threats": ["ddos", "phishing"]
+    },
+    {
+      "wave": 2,
+      "difficulty": "Moderate", 
+      "description": "Coordinated attack campaign",
+      "primary_threats": ["malware", "sql-injection"]
+    },
+    {
+      "wave": 3,
+      "difficulty": "Hard",
+      "description": "Sophisticated threat actors",
+      "primary_threats": ["zero-day", "apt"]
+    },
+    {
+      "wave": 4,
+      "difficulty": "Very Hard",
+      "description": "Multi-vector assault",
+      "primary_threats": ["ddos", "malware", "sql-injection"]
+    },
+    {
+      "wave": 5,
+      "difficulty": "Extreme",
+      "description": "State-sponsored attack",
+      "primary_threats": ["zero-day", "apt", "malware"]
     }
   ]
 }
