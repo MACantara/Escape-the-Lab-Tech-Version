@@ -16,15 +16,25 @@ export class AudioManager {
             'alien_spawn': 'static/audio/alien-spawn.mp3'
         };
 
-        // Load audio files (placeholder implementation)
+        // Load audio files with fallback handling
         for (const [key, path] of Object.entries(soundFiles)) {
             try {
-                const audio = new Audio(path);
+                const audio = new Audio();
                 audio.volume = 0.3;
-                audio.preload = 'auto';
+                audio.preload = 'none'; // Don't preload to avoid 404 errors
+                
+                // Test if file exists before setting src
+                const response = await fetch(path, { method: 'HEAD' }).catch(() => null);
+                if (response && response.ok) {
+                    audio.src = path;
+                    audio.preload = 'auto';
+                }
+                
                 this.sounds.set(key, audio);
             } catch (error) {
                 console.warn(`Failed to load sound: ${key}`, error);
+                // Create a silent audio object as fallback
+                this.sounds.set(key, { play: () => {}, pause: () => {}, currentTime: 0 });
             }
         }
     }
@@ -32,18 +42,21 @@ export class AudioManager {
     playSound(soundKey) {
         if (!this.soundEnabled) return;
         
-        console.log(`Playing sound: ${soundKey}`);
-        
         const sound = this.sounds.get(soundKey);
-        if (sound) {
+        if (sound && sound.play) {
             try {
                 sound.currentTime = 0; // Reset to beginning
-                sound.play().catch(e => {
-                    console.warn(`Failed to play sound ${soundKey}:`, e);
-                });
+                const playPromise = sound.play();
+                if (playPromise) {
+                    playPromise.catch(e => {
+                        console.warn(`Failed to play sound ${soundKey}:`, e);
+                    });
+                }
             } catch (error) {
                 console.warn(`Error playing sound ${soundKey}:`, error);
             }
+        } else {
+            console.warn(`Sound not found: ${soundKey}`);
         }
     }
 
