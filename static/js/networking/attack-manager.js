@@ -232,10 +232,10 @@ export class AttackManager {
         // Attack hit Super Earth - reduce integrity
         this.room.networkIntegrity = Math.max(0, this.room.networkIntegrity - attack.damage);
         this.room.audioManager.playSound('network_hit');
-        this.showNetworkDamage();
+        this.showNetworkDamage(attack);
     }
 
-    showNetworkDamage() {
+    showNetworkDamage(attack) {
         const gameArea = document.getElementById('defense-game');
         const superEarth = document.getElementById('super-earth');
         
@@ -284,7 +284,7 @@ export class AttackManager {
             <div class="text-center">
                 <div class="text-2xl">💥</div>
                 <div>SUPER EARTH HIT!</div>
-                <div class="text-sm">-${attack.damage} Network Integrity</div>
+                <div class="text-sm">-${attack ? attack.damage : 15} Network Integrity</div>
             </div>
         `;
         
