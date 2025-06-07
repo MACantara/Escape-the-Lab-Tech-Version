@@ -115,6 +115,26 @@ class Room1 {
         // Clear any existing content
         gameArea.innerHTML = '';
         
+        // Add Super Earth visual at bottom center
+        const superEarth = document.createElement('div');
+        superEarth.id = 'super-earth';
+        superEarth.className = 'absolute flex items-center justify-center z-5';
+        superEarth.style.width = '80px';
+        superEarth.style.height = '80px';
+        superEarth.style.left = `${(800 - 80) / 2}px`; // Center horizontally (gameArea width - earth width) / 2
+        superEarth.style.bottom = '10px'; // Position at bottom
+        superEarth.style.borderRadius = '50%';
+        superEarth.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8, #1e40af)';
+        superEarth.style.border = '3px solid #60a5fa';
+        superEarth.style.boxShadow = '0 0 20px rgba(96, 165, 250, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1)';
+        superEarth.style.fontSize = '32px';
+        superEarth.innerHTML = '🌍';
+        
+        // Add pulsing glow effect based on network integrity
+        superEarth.style.animation = 'pulse 2s infinite';
+        
+        gameArea.appendChild(superEarth);
+        
         // Add game instructions and info overlays
         const instructions = document.createElement('div');
         instructions.className = 'absolute top-2 left-2 text-white text-sm z-20 pointer-events-none';
@@ -143,7 +163,7 @@ class Room1 {
         // Setup shield controls
         this.shieldManager.setupShieldControls();
         
-        console.log('Defense game setup complete with shield');
+        console.log('Defense game setup complete with shield and Super Earth');
     }
 
     startDefense() {
@@ -217,6 +237,9 @@ class Room1 {
             }
         }
         
+        // Update Super Earth visual based on network integrity
+        this.updateSuperEarthVisual();
+        
         // Update attacks blocked
         const blockedDisplay = document.getElementById('attacks-blocked');
         if (blockedDisplay) {
@@ -245,6 +268,42 @@ class Room1 {
         const waveInfo = document.querySelector('.text-yellow-300');
         if (waveInfo) {
             waveInfo.textContent = this.waveManager.getWaveDifficulty();
+        }
+    }
+
+    updateSuperEarthVisual() {
+        const superEarth = document.getElementById('super-earth');
+        if (superEarth) {
+            const integrityRatio = this.networkIntegrity / 100;
+            
+            // Change appearance based on network integrity
+            if (integrityRatio > 0.7) {
+                // Healthy - Blue and glowing
+                superEarth.style.background = 'linear-gradient(45deg, #2563eb, #1d4ed8, #1e40af)';
+                superEarth.style.border = '3px solid #60a5fa';
+                superEarth.style.boxShadow = '0 0 20px rgba(96, 165, 250, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.2)';
+                superEarth.style.animation = 'pulse 2s infinite';
+            } else if (integrityRatio > 0.4) {
+                // Degraded - Orange/Yellow warning
+                superEarth.style.background = 'linear-gradient(45deg, #f59e0b, #d97706, #b45309)';
+                superEarth.style.border = '3px solid #fbbf24';
+                superEarth.style.boxShadow = '0 0 20px rgba(251, 191, 36, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.1)';
+                superEarth.style.animation = 'pulse 1s infinite';
+            } else {
+                // Critical - Red and flashing
+                superEarth.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c, #991b1b)';
+                superEarth.style.border = '3px solid #f87171';
+                superEarth.style.boxShadow = '0 0 25px rgba(248, 113, 113, 1), inset 0 0 20px rgba(255, 255, 255, 0.1)';
+                superEarth.style.animation = 'pulse 0.5s infinite';
+            }
+            
+            // Add screen shake effect when critically damaged
+            if (integrityRatio < 0.3) {
+                superEarth.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
+                setTimeout(() => {
+                    superEarth.style.transform = 'translate(0, 0)';
+                }, 100);
+            }
         }
     }
 

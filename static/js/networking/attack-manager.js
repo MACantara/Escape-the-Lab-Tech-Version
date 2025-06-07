@@ -233,12 +233,29 @@ export class AttackManager {
 
     showNetworkDamage() {
         const gameArea = document.getElementById('defense-game');
+        const superEarth = document.getElementById('super-earth');
         
         // Flash red background to indicate damage
         gameArea.style.backgroundColor = '#7f1d1d';
         setTimeout(() => {
             gameArea.style.backgroundColor = '#1f2937';
         }, 200);
+        
+        // Make Super Earth flash red when hit
+        if (superEarth) {
+            const originalBackground = superEarth.style.background;
+            const originalBorder = superEarth.style.border;
+            
+            superEarth.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
+            superEarth.style.border = '3px solid #f87171';
+            superEarth.style.transform = 'scale(1.1)';
+            
+            setTimeout(() => {
+                superEarth.style.background = originalBackground;
+                superEarth.style.border = originalBorder;
+                superEarth.style.transform = 'scale(1)';
+            }, 300);
+        }
         
         // Show damage indicator
         const damageIndicator = document.createElement('div');
@@ -247,7 +264,7 @@ export class AttackManager {
         damageIndicator.style.top = '50%';
         damageIndicator.style.transform = 'translate(-50%, -50%)';
         damageIndicator.style.zIndex = '20';
-        damageIndicator.textContent = 'NETWORK HIT!';
+        damageIndicator.textContent = 'SUPER EARTH HIT!';
         
         gameArea.appendChild(damageIndicator);
         
