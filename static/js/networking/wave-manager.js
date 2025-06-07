@@ -12,16 +12,10 @@ export class WaveManager {
         return Math.min(this.room.currentWaveAttacks, this.room.attacksPerWave);
     }
 
-    shouldSpawnAttack() {
-        if (!this.room.isDefending) return false;
-        if (this.room.currentWaveAttacks >= this.room.attacksPerWave) return false;
-        
-        const spawnRate = this.room.attackManager.getAttackSpawnRate();
-        return Math.random() < spawnRate;
-    }
-
     checkWaveCompletion() {
-        if (this.room.currentWaveAttacks >= this.room.attacksPerWave && this.room.attackManager.attacks.length === 0) {
+        // Check if current wave is complete
+        if (this.room.currentWaveAttacks >= this.room.attacksPerWave && 
+            this.room.attackManager.attacks.length === 0) {
             this.completeWave();
         }
     }
@@ -33,15 +27,20 @@ export class WaveManager {
         // Increase attacks per wave for higher difficulty
         this.room.attacksPerWave = Math.min(30, 8 + (this.room.wave - 1) * 3);
         
+        // Play wave complete sound
+        this.room.audioManager.playSound('wave_complete');
+        
         if (this.room.wave > this.room.maxWaves) {
+            // All waves completed
             this.room.defenseComplete();
         } else {
+            // Show wave completion message
             this.showWaveComplete();
             
             // Brief pause between waves
             setTimeout(() => {
                 if (this.room.isDefending) {
-                    this.room.render(); // Update display for new wave
+                    this.room.updateDisplay(); // Update display for new wave
                 }
             }, 2000);
         }
@@ -73,8 +72,6 @@ export class WaveManager {
         setTimeout(() => {
             waveMessage.remove();
         }, 2000);
-        
-        this.room.playSound('wave_complete');
     }
 
     resetWave() {
