@@ -4,6 +4,10 @@ export class CodeExecutor {
         this.codeQueue = [];
         this.isExecuting = false;
         this.executionSpeed = 500; // ms between commands
+        this.stepMode = false;
+        this.currentLine = 0;
+        this.variables = new Map();
+        this.callStack = [];
     }
 
     executeCode() {
@@ -17,8 +21,13 @@ export class CodeExecutor {
             return;
         }
         
-        // Parse code into commands
-        this.codeQueue = this.parseCode(code);
+        // Parse code into commands with control structures
+        try {
+            this.codeQueue = this.parseAdvancedCode(code);
+        } catch (error) {
+            this.room.showMessage(`Parse Error: ${error.message}`, 'error');
+            return;
+        }
         
         if (this.codeQueue.length === 0) {
             this.room.showMessage('No valid commands found!', 'error');
@@ -26,57 +35,210 @@ export class CodeExecutor {
         }
         
         this.isExecuting = true;
+        this.currentLine = 0;
+        this.variables.clear();
+        this.callStack = [];
         this.updateExecutionDisplay();
         this.executeNextCommand();
     }
 
-    parseCode(code) {
-        const lines = code.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'));
+    parseAdvancedCode(code) {
+        const lines = code.split('\n').map(line => line.trimEnd());
         const commands = [];
+        const tokens = this.tokenize(lines);
+        
+        return this.parseTokens(tokens);
+    }
+
+    tokenize(lines) {
+        const tokens = [];
         
         lines.forEach((line, index) => {
             const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) return;
             
-            // Parse move commands
-            if (trimmed.match(/move\s*\(\s*['"]?(up|down|left|right)['"]?\s*\)/i)) {
-                const direction = trimmed.match(/['"]?(up|down|left|right)['"]?/i)[1].toLowerCase();
-                commands.push({ type: 'move', direction, line: index + 1 });
+            const indentLevel = this.getIndentLevel(line);
+            const lineNumber = index + 1;
+            
+            // Handle control structures
+            if (trimmed.match(/^for\s+\w+\s+in\s+range\s*\(\s*\d+\s*\)\s*:/)) {
+                const match = trimmed.match(/^for\s+(\w+)\s+in\s+range\s*\(\s*(\d+)\s*\)\s*:/);
+                tokens.push({
+                    type: 'for_loop',
+                    variable: match[1],
+                    count: parseInt(match[2]),
+                    indentLevel,
+                    lineNumber
+                });
             }
-            
-            // Parse attack commands
-            else if (trimmed.match(/attack\s*\(\s*['"]?(up|down|left|right)['"]?\s*\)/i)) {
-                const direction = trimmed.match(/['"]?(up|down|left|right)['"]?/i)[1].toLowerCase();
-                commands.push({ type: 'attack', direction, line: index + 1 });
+            else if (trimmed.match(/^while\s+.+:/)) {
+                const condition = trimmed.replace(/^while\s+/, '').replace(/:$/, '');
+                tokens.push({
+                    type: 'while_loop',
+                    condition,
+                    indentLevel,
+                    lineNumber
+                });
             }
-            
-            // Parse scan command
-            else if (trimmed.match(/scan\s*\(\s*\)/i)) {
-                commands.push({ type: 'scan', line: index + 1 });
+            else if (trimmed.match(/^if\s+.+:/)) {
+                const condition = trimmed.replace(/^if\s+/, '').replace(/:$/, '');
+                tokens.push({
+                    type: 'if_statement',
+                    condition,
+                    indentLevel,
+                    lineNumber
+                });
             }
-            
-            // Parse wait command
-            else if (trimmed.match(/wait\s*\(\s*\)/i)) {
-                commands.push({ type: 'wait', line: index + 1 });
+            else if (trimmed.match(/^else\s*:/)) {
+                tokens.push({
+                    type: 'else_statement',
+                    indentLevel,
+                    lineNumber
+                });
             }
-            
-            // Parse collect command
-            else if (trimmed.match(/collect\s*\(\s*\)/i)) {
-                commands.push({ type: 'collect', line: index + 1 });
-            }
-            
-            // Parse use_item command
-            else if (trimmed.match(/use_item\s*\(\s*['"]?\w+['"]?\s*\)/i)) {
-                const item = trimmed.match(/use_item\s*\(\s*['"]?(\w+)['"]?\s*\)/i)[1];
-                commands.push({ type: 'use_item', item, line: index + 1 });
-            }
-            
-            // Invalid command
             else {
-                commands.push({ type: 'error', message: `Syntax error on line ${index + 1}: ${trimmed}`, line: index + 1 });
+                // Regular command
+                const command = this.parseBasicCommand(trimmed, lineNumber);
+                if (command) {
+                    command.indentLevel = indentLevel;
+                    tokens.push(command);
+                }
             }
         });
         
+        return tokens;
+    }
+
+    getIndentLevel(line) {
+        const match = line.match(/^(\s*)/);
+        return match ? Math.floor(match[1].length / 4) : 0; // Assume 4 spaces per indent
+    }
+
+    parseTokens(tokens) {
+        const commands = [];
+        let i = 0;
+        
+        while (i < tokens.length) {
+            const token = tokens[i];
+            
+            if (token.type === 'for_loop') {
+                const loopBody = this.extractBlock(tokens, i + 1, token.indentLevel);
+                commands.push({
+                    type: 'for_loop',
+                    variable: token.variable,
+                    count: token.count,
+                    body: this.parseTokens(loopBody.tokens),
+                    lineNumber: token.lineNumber
+                });
+                i = loopBody.nextIndex;
+            }
+            else if (token.type === 'while_loop') {
+                const loopBody = this.extractBlock(tokens, i + 1, token.indentLevel);
+                commands.push({
+                    type: 'while_loop',
+                    condition: token.condition,
+                    body: this.parseTokens(loopBody.tokens),
+                    lineNumber: token.lineNumber
+                });
+                i = loopBody.nextIndex;
+            }
+            else if (token.type === 'if_statement') {
+                const ifBlock = this.extractConditionalBlock(tokens, i, token.indentLevel);
+                commands.push({
+                    type: 'conditional',
+                    condition: token.condition,
+                    ifBody: this.parseTokens(ifBlock.ifTokens),
+                    elseBody: ifBlock.elseTokens ? this.parseTokens(ifBlock.elseTokens) : [],
+                    lineNumber: token.lineNumber
+                });
+                i = ifBlock.nextIndex;
+            }
+            else {
+                commands.push(token);
+                i++;
+            }
+        }
+        
         return commands;
+    }
+
+    extractBlock(tokens, startIndex, parentIndentLevel) {
+        const blockTokens = [];
+        let i = startIndex;
+        
+        while (i < tokens.length && tokens[i].indentLevel > parentIndentLevel) {
+            blockTokens.push(tokens[i]);
+            i++;
+        }
+        
+        return { tokens: blockTokens, nextIndex: i };
+    }
+
+    extractConditionalBlock(tokens, startIndex, parentIndentLevel) {
+        let i = startIndex + 1;
+        const ifTokens = [];
+        let elseTokens = null;
+        
+        // Extract if block
+        while (i < tokens.length && tokens[i].indentLevel > parentIndentLevel) {
+            if (tokens[i].type === 'else_statement' && tokens[i].indentLevel === parentIndentLevel + 1) {
+                break;
+            }
+            ifTokens.push(tokens[i]);
+            i++;
+        }
+        
+        // Check for else block
+        if (i < tokens.length && tokens[i].type === 'else_statement') {
+            i++; // Skip else statement
+            elseTokens = [];
+            while (i < tokens.length && tokens[i].indentLevel > parentIndentLevel) {
+                elseTokens.push(tokens[i]);
+                i++;
+            }
+        }
+        
+        return { ifTokens, elseTokens, nextIndex: i };
+    }
+
+    parseBasicCommand(line, lineNumber) {
+        // Parse move commands
+        if (line.match(/move\s*\(\s*['"]?(up|down|left|right)['"]?\s*\)/i)) {
+            const direction = line.match(/['"]?(up|down|left|right)['"]?/i)[1].toLowerCase();
+            return { type: 'move', direction, lineNumber };
+        }
+        
+        // Parse attack commands
+        else if (line.match(/attack\s*\(\s*['"]?(up|down|left|right)['"]?\s*\)/i)) {
+            const direction = line.match(/['"]?(up|down|left|right)['"]?/i)[1].toLowerCase();
+            return { type: 'attack', direction, lineNumber };
+        }
+        
+        // Parse scan command
+        else if (line.match(/scan\s*\(\s*\)/i)) {
+            return { type: 'scan', lineNumber };
+        }
+        
+        // Parse wait command
+        else if (line.match(/wait\s*\(\s*\)/i)) {
+            return { type: 'wait', lineNumber };
+        }
+        
+        // Parse collect command
+        else if (line.match(/collect\s*\(\s*\)/i)) {
+            return { type: 'collect', lineNumber };
+        }
+        
+        // Parse use_item command
+        else if (line.match(/use_item\s*\(\s*['"]?\w+['"]?\s*\)/i)) {
+            const item = line.match(/use_item\s*\(\s*['"]?(\w+)['"]?\s*\)/i)[1];
+            return { type: 'use_item', item, lineNumber };
+        }
+        
+        // Invalid command
+        else {
+            return { type: 'error', message: `Syntax error on line ${lineNumber}: ${line}`, lineNumber };
+        }
     }
 
     executeNextCommand() {
@@ -86,47 +248,45 @@ export class CodeExecutor {
             return;
         }
         
-        const command = this.codeQueue.shift();
-        
-        // Handle error commands
-        if (command.type === 'error') {
-            this.room.showMessage(command.message, 'error');
-            this.executeNextCommand();
-            return;
-        }
-        
-        // Execute command
-        const result = this.executeCommand(command);
-        
-        if (result.success) {
-            this.room.updateDisplay();
-            this.room.gridManager.renderPlayer();
-            this.room.gridManager.renderGameObjects();
-            
-            // Check for level completion
-            if (this.room.bugs.length === 0) {
-                this.room.levelComplete();
-                return;
-            }
-            
-            // Check for game over
-            if (this.room.player.health <= 0) {
-                this.room.gameOver();
-                return;
-            }
-            
-            // Continue execution
-            setTimeout(() => {
-                this.executeNextCommand();
-            }, this.executionSpeed);
-        } else {
-            this.room.showMessage(result.message, 'error');
-            this.isExecuting = false;
+        if (this.stepMode) {
             this.updateExecutionDisplay();
+            return; // Wait for manual step
         }
+        
+        const command = this.codeQueue.shift();
+        this.currentLine = command.lineNumber || this.currentLine + 1;
+        
+        this.executeCommand(command).then(result => {
+            if (result.success) {
+                this.room.ui.updateDisplay();
+                this.room.gridManager.renderPlayer();
+                this.room.gridManager.renderGameObjects();
+                
+                // Check for level completion
+                if (this.room.bugs.length === 0) {
+                    this.room.levelComplete();
+                    return;
+                }
+                
+                // Check for game over
+                if (this.room.player.health <= 0) {
+                    this.room.gameOver();
+                    return;
+                }
+                
+                // Continue execution
+                setTimeout(() => {
+                    this.executeNextCommand();
+                }, this.executionSpeed);
+            } else {
+                this.room.showMessage(result.message, 'error');
+                this.isExecuting = false;
+                this.updateExecutionDisplay();
+            }
+        });
     }
 
-    executeCommand(command) {
+    async executeCommand(command) {
         switch (command.type) {
             case 'move':
                 return this.room.playerActions.executeMove(command.direction);
@@ -140,14 +300,99 @@ export class CodeExecutor {
                 return this.room.playerActions.executeCollect();
             case 'use_item':
                 return this.room.playerActions.executeUseItem(command.item);
+            case 'for_loop':
+                return this.executeForLoop(command);
+            case 'while_loop':
+                return this.executeWhileLoop(command);
+            case 'conditional':
+                return this.executeConditional(command);
+            case 'error':
+                return { success: false, message: command.message };
             default:
                 return { success: false, message: 'Unknown command type' };
         }
     }
 
+    executeForLoop(command) {
+        for (let i = 0; i < command.count; i++) {
+            this.variables.set(command.variable, i);
+            // Add loop body commands to the front of the queue
+            this.codeQueue.unshift(...command.body.map(cmd => ({ ...cmd })));
+        }
+        return { success: true };
+    }
+
+    executeWhileLoop(command) {
+        let iterations = 0;
+        const maxIterations = 100; // Prevent infinite loops
+        
+        while (this.evaluateCondition(command.condition) && iterations < maxIterations) {
+            // Add loop body commands to the front of the queue
+            this.codeQueue.unshift(...command.body.map(cmd => ({ ...cmd })));
+            iterations++;
+        }
+        
+        if (iterations >= maxIterations) {
+            return { success: false, message: 'While loop exceeded maximum iterations (100)' };
+        }
+        
+        return { success: true };
+    }
+
+    executeConditional(command) {
+        if (this.evaluateCondition(command.condition)) {
+            // Add if body commands to the front of the queue
+            this.codeQueue.unshift(...command.ifBody.map(cmd => ({ ...cmd })));
+        } else if (command.elseBody.length > 0) {
+            // Add else body commands to the front of the queue
+            this.codeQueue.unshift(...command.elseBody.map(cmd => ({ ...cmd })));
+        }
+        return { success: true };
+    }
+
+    evaluateCondition(condition) {
+        // Handle built-in condition functions
+        if (condition === 'has_energy()') {
+            return this.room.player.energy > 10;
+        }
+        
+        if (condition.match(/bug_nearby\s*\(\s*['"]?(up|down|left|right)['"]?\s*\)/)) {
+            const direction = condition.match(/['"]?(up|down|left|right)['"]?/)[1];
+            return this.room.playerActions.checkBugNearby(direction);
+        }
+        
+        if (condition.match(/can_move\s*\(\s*['"]?(up|down|left|right)['"]?\s*\)/)) {
+            const direction = condition.match(/['"]?(up|down|left|right)['"]?/)[1];
+            return this.room.playerActions.checkCanMove(direction);
+        }
+        
+        if (condition.match(/health_low\s*\(\s*\)/)) {
+            return this.room.player.health < 30;
+        }
+        
+        if (condition.match(/energy_low\s*\(\s*\)/)) {
+            return this.room.player.energy < 15;
+        }
+        
+        // Default to false for unknown conditions
+        return false;
+    }
+
+    stepDebug() {
+        if (!this.isExecuting) {
+            this.stepMode = true;
+            this.executeCode();
+        } else {
+            this.executeNextCommand();
+        }
+    }
+
     stopExecution() {
         this.isExecuting = false;
+        this.stepMode = false;
         this.codeQueue = [];
+        this.variables.clear();
+        this.callStack = [];
         this.updateExecutionDisplay();
         this.room.showMessage('Code execution stopped.', 'info');
     }
@@ -157,17 +402,29 @@ export class CodeExecutor {
         const queueDisplay = document.getElementById('queue-display');
         const executeBtn = document.getElementById('execute-code');
         const stopBtn = document.getElementById('stop-execution');
+        const stepBtn = document.getElementById('step-debug');
         
         if (statusDisplay) {
-            statusDisplay.textContent = this.isExecuting ? 'EXECUTING' : 'READY';
+            const status = this.stepMode ? 'STEP MODE' : (this.isExecuting ? 'EXECUTING' : 'READY');
+            statusDisplay.textContent = status;
             statusDisplay.className = `font-bold ${this.isExecuting ? 'text-yellow-400' : 'text-green-400'}`;
         }
         
         if (queueDisplay) {
             if (this.codeQueue.length > 0) {
-                queueDisplay.innerHTML = this.codeQueue.map(cmd => 
-                    `<div class="text-yellow-300">${cmd.type}${cmd.direction ? `('${cmd.direction}')` : '()'}</div>`
-                ).join('');
+                const preview = this.codeQueue.slice(0, 5).map(cmd => {
+                    let cmdText = cmd.type;
+                    if (cmd.direction) cmdText += `('${cmd.direction}')`;
+                    else if (cmd.condition) cmdText += ` (${cmd.condition.substring(0, 20)}...)`;
+                    else if (cmd.count) cmdText += ` (${cmd.count}x)`;
+                    return `<div class="text-yellow-300">${cmdText}</div>`;
+                }).join('');
+                
+                if (this.codeQueue.length > 5) {
+                    queueDisplay.innerHTML = preview + `<div class="text-gray-400">... +${this.codeQueue.length - 5} more</div>`;
+                } else {
+                    queueDisplay.innerHTML = preview;
+                }
             } else {
                 queueDisplay.innerHTML = '<div class="text-gray-500">No commands queued</div>';
             }
@@ -175,5 +432,6 @@ export class CodeExecutor {
         
         if (executeBtn) executeBtn.disabled = this.isExecuting;
         if (stopBtn) stopBtn.disabled = !this.isExecuting;
+        if (stepBtn) stepBtn.disabled = this.isExecuting && !this.stepMode;
     }
 }
