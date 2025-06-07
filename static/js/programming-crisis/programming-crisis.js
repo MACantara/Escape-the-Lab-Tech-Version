@@ -343,3 +343,7 @@ class Room6 {
 
 // Register the class globally
 window.Room6 = Room6;
+
+// Export the class for ES6 module imports
+export { Room6 };
+export default Room6;
