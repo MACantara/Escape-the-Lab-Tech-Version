@@ -83,11 +83,11 @@ export class LevelManager {
             if (roomNumber === 1 || roomNumber === 2 || roomNumber === 4) {
                 console.log(`Loading modular room: ${roomName}`);
                 
-                // Dynamic import for modular rooms - Fixed paths
+                // Dynamic import for modular rooms
                 const moduleMap = {
-                    1: './networking/networking.js',
-                    2: './cloud-computing/cloud-computing.js', 
-                    4: './database-emergency/database-emergency.js'
+                    1: '../networking/networking.js',
+                    2: '../cloud-computing/cloud-computing.js', 
+                    4: '../database-emergency/database-emergency.js'
                 };
                 
                 const modulePath = moduleMap[roomNumber];
