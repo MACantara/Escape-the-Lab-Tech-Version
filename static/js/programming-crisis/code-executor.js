@@ -361,17 +361,22 @@ export class CodeExecutor {
     }
 
     executeWhileLoop(command) {
-        let iterations = 0;
-        const maxIterations = 100; // Prevent infinite loops
+        // For while loops, we need to check the condition and add the body once at a time
+        // Instead of pre-calculating all iterations, we add a special while loop tracker
         
-        while (this.evaluateCondition(command.condition) && iterations < maxIterations) {
-            // Add loop body commands to the front of the queue
-            this.codeQueue.unshift(...command.body.map(cmd => ({ ...cmd })));
-            iterations++;
-        }
-        
-        if (iterations >= maxIterations) {
-            return { success: false, message: 'While loop exceeded maximum iterations (100)' };
+        if (this.evaluateCondition(command.condition)) {
+            // Add the loop body commands to the front of the queue
+            const loopBody = command.body.map(cmd => ({ ...cmd }));
+            
+            // Add the while loop command back to the queue to check condition again after body executes
+            const whileLoopContinuation = {
+                ...command,
+                type: 'while_loop',
+                lineNumber: command.lineNumber
+            };
+            
+            // Add body commands first, then the while loop check
+            this.codeQueue.unshift(...loopBody, whileLoopContinuation);
         }
         
         return { success: true };
@@ -425,12 +430,12 @@ export class CodeExecutor {
             return this.room.playerActions.checkCanMove(direction);
         }
         
-        // Handle comparison operations
-        if (condition.match(/energy\s*[<>=!]+\s*\d+/)) {
+        // Handle comparison operations with proper variable evaluation
+        if (condition.match(/energy\s*([<>=!]+)\s*\d+/)) {
             return this.evaluateComparison(condition, this.room.player.energy);
         }
         
-        if (condition.match(/health\s*[<>=!]+\s*\d+/)) {
+        if (condition.match(/health\s*([<>=!]+)\s*\d+/)) {
             return this.evaluateComparison(condition, this.room.player.health);
         }
         
@@ -444,6 +449,7 @@ export class CodeExecutor {
     }
 
     evaluateComparison(condition, value) {
+        // Improved regex to handle spaces and different operators
         const match = condition.match(/(\w+)\s*([<>=!]+)\s*(\d+)/);
         if (!match) return false;
         
@@ -497,5 +503,24 @@ export class CodeExecutor {
         if (executeBtn) executeBtn.disabled = this.isExecuting;
         if (stopBtn) stopBtn.disabled = !this.isExecuting;
         if (stepBtn) stepBtn.disabled = this.isExecuting && !this.stepMode;
+    }
+
+    stepDebug() {
+        if (!this.isExecuting) {
+            this.stepMode = true;
+            this.executeCode();
+        } else {
+            this.executeNextCommand();
+        }
+    }
+
+    stopExecution() {
+        this.isExecuting = false;
+        this.stepMode = false;
+        this.codeQueue = [];
+        this.variables.clear();
+        this.callStack = [];
+        this.updateExecutionDisplay();
+        this.room.showMessage('Code execution stopped.', 'info');
     }
 }
