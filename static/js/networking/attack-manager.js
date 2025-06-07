@@ -32,6 +32,9 @@ export class AttackManager {
         
         this.attacks.push(attack);
         this.createAttackElement(attack);
+        
+        // Play spawn sound
+        this.room.audioManager.playSound('alien_spawn');
     }
 
     getRandomAttackPattern() {
@@ -224,7 +227,7 @@ export class AttackManager {
     handleNetworkDamage(attack) {
         // Attack hit the network - reduce integrity
         this.room.networkIntegrity = Math.max(0, this.room.networkIntegrity - attack.damage);
-        this.room.playSound('network_hit');
+        this.room.audioManager.playSound('network_hit');
         this.showNetworkDamage();
     }
 
@@ -264,9 +267,9 @@ export class AttackManager {
 
     getAttackSpawnRate() {
         // Base spawn rate increases with wave difficulty
-        const baseRate = 0.02; // 2% chance per frame at wave 1
-        const waveMultiplier = 1 + (this.room.wave - 1) * 0.3; // 30% increase per wave
+        const baseRate = 0.015; // 1.5% chance per frame at wave 1
+        const waveMultiplier = 1 + (this.room.wave - 1) * 0.25; // 25% increase per wave
         
-        return Math.min(0.15, baseRate * waveMultiplier); // Cap at 15% chance
+        return Math.min(0.12, baseRate * waveMultiplier); // Cap at 12% chance
     }
 }
