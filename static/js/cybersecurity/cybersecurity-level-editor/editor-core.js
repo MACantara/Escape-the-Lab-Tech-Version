@@ -33,7 +33,7 @@ export class EditorCore {
         if (this.isEditorMode) return;
         
         this.isEditorMode = true;
-        this.room.game.pauseGame('Level Editor Active');
+        // Don't call pauseGame - handle editor state internally
         this.ui.renderEditor();
         this.setupEditorGrid();
         
@@ -47,7 +47,7 @@ export class EditorCore {
         
         this.isEditorMode = false;
         this.ui.cleanup();
-        this.room.game.resumeGame();
+        // Don't call resumeGame - just restore the room view
         this.room.render(); // Restore normal game view
         this.room.defenseGrid.setupGameArea();
         this.room.showMessage('Level Editor closed.', 'info');

@@ -39,10 +39,10 @@ export class EditorUI {
                 <div class="editor-tools bg-gray-700 p-3 rounded">
                     <h4 class="font-bold text-blue-400 mb-2">🔧 Editor Tools</h4>
                     <div class="grid grid-cols-2 gap-1">
-                        <button class="tool-btn active" data-tool="path">📍 Path</button>
-                        <button class="tool-btn" data-tool="spawn">🚀 Spawn</button>
-                        <button class="tool-btn" data-tool="objective">🎯 Goal</button>
-                        <button class="tool-btn" data-tool="erase">🗑️ Erase</button>
+                        <button class="tool-btn p-2 rounded text-xs transition-colors bg-gray-600 hover:bg-gray-500 border border-gray-500 active" data-tool="path">📍 Path</button>
+                        <button class="tool-btn p-2 rounded text-xs transition-colors bg-gray-600 hover:bg-gray-500 border border-gray-500" data-tool="spawn">🚀 Spawn</button>
+                        <button class="tool-btn p-2 rounded text-xs transition-colors bg-gray-600 hover:bg-gray-500 border border-gray-500" data-tool="objective">🎯 Goal</button>
+                        <button class="tool-btn p-2 rounded text-xs transition-colors bg-gray-600 hover:bg-gray-500 border border-gray-500" data-tool="erase">🗑️ Erase</button>
                     </div>
                 </div>
                 
@@ -228,9 +228,12 @@ export class EditorUI {
 
     updateToolSelection() {
         document.querySelectorAll('.tool-btn').forEach(btn => {
-            btn.classList.remove('active');
+            btn.classList.remove('active', 'bg-blue-600', 'border-blue-400');
+            btn.classList.add('bg-gray-600', 'border-gray-500');
+            
             if (btn.dataset.tool === this.editor.currentTool) {
-                btn.classList.add('active');
+                btn.classList.add('active', 'bg-blue-600', 'border-blue-400');
+                btn.classList.remove('bg-gray-600', 'border-gray-500');
             }
         });
 
@@ -246,12 +249,14 @@ export class EditorUI {
         // Update validation status
         const isValid = this.editor.validateLevel();
         const statusElement = document.getElementById('validation-status');
-        if (isValid) {
-            statusElement.textContent = '✅ Level Valid';
-            statusElement.className = 'text-green-400 mt-1';
-        } else {
-            statusElement.textContent = '❌ Level Invalid';
-            statusElement.className = 'text-red-400 mt-1';
+        if (statusElement) {
+            if (isValid) {
+                statusElement.textContent = '✅ Level Valid';
+                statusElement.className = 'text-green-400 mt-1';
+            } else {
+                statusElement.textContent = '❌ Level Invalid';
+                statusElement.className = 'text-red-400 mt-1';
+            }
         }
     }
 
