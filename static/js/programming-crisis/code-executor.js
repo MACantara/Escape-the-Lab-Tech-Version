@@ -166,6 +166,12 @@ export class CodeExecutor {
                 });
                 i = ifBlock.nextIndex;
             }
+            else if (token.type === 'elif_statement' || token.type === 'else_statement') {
+                // Skip standalone elif/else statements as they should be part of if blocks
+                // This can happen if there's malformed code
+                console.warn(`Standalone ${token.type} found at line ${token.lineNumber}, skipping`);
+                i++;
+            }
             else {
                 commands.push(token);
                 i++;
@@ -324,6 +330,36 @@ export class CodeExecutor {
         });
     }
 
+    executeForLoop(command) {
+        for (let i = 0; i < command.count; i++) {
+            this.variables.set(command.variable, i);
+            // Add loop body commands to the front of the queue
+            this.codeQueue.unshift(...command.body.map(cmd => ({ ...cmd })));
+        }
+        return { success: true };
+    }
+
+    executeWhileLoop(command) {
+        // Check if condition is still true
+        if (this.evaluateCondition(command.condition)) {
+            // Add the loop body commands to the front of the queue
+            const loopBody = command.body.map(cmd => ({ ...cmd }));
+            
+            // Add the while loop command back to the queue to check condition again after body executes
+            const whileLoopContinuation = {
+                type: 'while_loop',
+                condition: command.condition,
+                body: command.body,
+                lineNumber: command.lineNumber
+            };
+            
+            // Add body commands first, then the while loop check
+            this.codeQueue.unshift(...loopBody, whileLoopContinuation);
+        }
+        
+        return { success: true };
+    }
+
     async executeCommand(command) {
         switch (command.type) {
             case 'move':
@@ -347,39 +383,9 @@ export class CodeExecutor {
             case 'error':
                 return { success: false, message: command.message };
             default:
-                return { success: false, message: 'Unknown command type' };
+                console.error('Unknown command type:', command);
+                return { success: false, message: `Unknown command type: ${command.type}. Line: ${command.lineNumber || 'unknown'}` };
         }
-    }
-
-    executeForLoop(command) {
-        for (let i = 0; i < command.count; i++) {
-            this.variables.set(command.variable, i);
-            // Add loop body commands to the front of the queue
-            this.codeQueue.unshift(...command.body.map(cmd => ({ ...cmd })));
-        }
-        return { success: true };
-    }
-
-    executeWhileLoop(command) {
-        // For while loops, we need to check the condition and add the body once at a time
-        // Instead of pre-calculating all iterations, we add a special while loop tracker
-        
-        if (this.evaluateCondition(command.condition)) {
-            // Add the loop body commands to the front of the queue
-            const loopBody = command.body.map(cmd => ({ ...cmd }));
-            
-            // Add the while loop command back to the queue to check condition again after body executes
-            const whileLoopContinuation = {
-                ...command,
-                type: 'while_loop',
-                lineNumber: command.lineNumber
-            };
-            
-            // Add body commands first, then the while loop check
-            this.codeQueue.unshift(...loopBody, whileLoopContinuation);
-        }
-        
-        return { success: true };
     }
 
     executeConditional(command) {
@@ -419,7 +425,7 @@ export class CodeExecutor {
             return this.room.player.energy < 15;
         }
         
-        // Handle function calls with parameters
+        // Handle function calls with parameters (support both single and double quotes)
         if (condition.match(/bug_nearby\s*\(\s*['"]?(up|down|left|right)['"]?\s*\)/)) {
             const direction = condition.match(/['"]?(up|down|left|right)['"]?/)[1];
             return this.room.playerActions.checkBugNearby(direction);
@@ -487,6 +493,7 @@ export class CodeExecutor {
                     if (cmd.direction) cmdText += `('${cmd.direction}')`;
                     else if (cmd.condition) cmdText += ` (${cmd.condition.substring(0, 15)}...)`;
                     else if (cmd.count) cmdText += ` (${cmd.count}x)`;
+                    else if (cmd.item) cmdText += `('${cmd.item}')`;
                     return `<div class="text-yellow-300">${cmdText}</div>`;
                 }).join('');
                 
