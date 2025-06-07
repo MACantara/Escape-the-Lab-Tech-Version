@@ -146,7 +146,7 @@ class Room1 {
         // Update shield
         this.shieldManager.updateShieldStrength();
         
-        // Spawn attacks
+        // Spawn attacks based on wave manager
         if (this.waveManager.shouldSpawnAttack()) {
             this.attackManager.spawnAttack();
             this.currentWaveAttacks++;
@@ -174,6 +174,21 @@ class Room1 {
         const integrityDisplay = document.getElementById('network-integrity');
         if (integrityDisplay) {
             integrityDisplay.textContent = `${Math.round(this.networkIntegrity)}%`;
+            
+            // Update status color and text
+            const statusCard = integrityDisplay.closest('.status-card');
+            const statusText = statusCard.querySelector('.text-xs');
+            
+            if (this.networkIntegrity > 70) {
+                statusText.textContent = 'STABLE';
+                statusText.className = 'text-xs text-green-400';
+            } else if (this.networkIntegrity > 30) {
+                statusText.textContent = 'DEGRADED';
+                statusText.className = 'text-xs text-yellow-400';
+            } else {
+                statusText.textContent = 'CRITICAL';
+                statusText.className = 'text-xs text-red-400';
+            }
         }
         
         // Update attacks blocked
@@ -192,6 +207,18 @@ class Room1 {
         const counterDisplay = document.getElementById('wave-counter');
         if (counterDisplay) {
             counterDisplay.textContent = `${this.waveManager.getAttacksThisWave()}/${this.attacksPerWave}`;
+        }
+        
+        // Update shield counter
+        const shieldDisplay = document.getElementById('shield-counter');
+        if (shieldDisplay) {
+            shieldDisplay.textContent = `${Math.round(this.shieldStrength)}%`;
+        }
+        
+        // Update wave difficulty display
+        const waveInfo = document.querySelector('.text-yellow-300');
+        if (waveInfo) {
+            waveInfo.textContent = this.waveManager.getWaveDifficulty();
         }
     }
 
