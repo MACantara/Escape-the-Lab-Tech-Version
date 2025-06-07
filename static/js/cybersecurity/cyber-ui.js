@@ -125,6 +125,9 @@ export class CyberUI {
                     <button id="sell-defense" class="w-full p-2 rounded bg-yellow-600 hover:bg-yellow-500 transition-colors">
                         <i class="bi bi-currency-exchange"></i> Sell Selected Defense
                     </button>
+                    <button id="level-editor" class="w-full p-2 rounded bg-purple-600 hover:bg-purple-500 transition-colors">
+                        <i class="bi bi-tools"></i> Level Editor
+                    </button>
                     <button id="emergency-shutdown" class="w-full p-2 rounded bg-red-600 hover:bg-red-500 transition-colors">
                         <i class="bi bi-power"></i> Emergency Shutdown
                     </button>
@@ -172,6 +175,10 @@ export class CyberUI {
 
         document.getElementById('emergency-shutdown')?.addEventListener('click', () => {
             this.room.emergencyShutdown();
+        });
+
+        document.getElementById('level-editor')?.addEventListener('click', () => {
+            this.room.levelEditor.enterEditorMode();
         });
     }
 

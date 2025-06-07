@@ -2,6 +2,7 @@ import { DefenseGrid } from './defense-grid.js';
 import { AttackWaveManager } from './attack-wave-manager.js';
 import { DefenseManager } from './defense-manager.js';
 import { CyberUI } from './cyber-ui.js';
+import { CyberLevelEditor } from './level-editor.js';
 
 class Room5 {
     constructor(game) {
@@ -32,6 +33,7 @@ class Room5 {
         this.attackWaveManager = new AttackWaveManager(this);
         this.defenseManager = new DefenseManager(this);
         this.ui = new CyberUI(this);
+        this.levelEditor = new CyberLevelEditor(this);
     }
 
     async init() {
@@ -135,6 +137,11 @@ class Room5 {
         this.isDefending = false;
         this.attackWaves = [];
         this.defenseUnits = [];
+        
+        // Clean up level editor if active
+        if (this.levelEditor.isEditorMode()) {
+            this.levelEditor.exitEditorMode();
+        }
     }
 }
 
