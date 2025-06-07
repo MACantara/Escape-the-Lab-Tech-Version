@@ -21,8 +21,7 @@ export class ProgrammingCrisisUI {
                 </div>
                 
                 ${this.renderStatusPanel()}
-                ${this.renderGameContainer()}
-                ${this.renderControlsPanel()}
+                ${this.renderTwoColumnLayout()}
             </div>
         `;
 
@@ -31,7 +30,7 @@ export class ProgrammingCrisisUI {
 
     renderStatusPanel() {
         return `
-            <div class="status-panel grid grid-cols-5 gap-3 mb-4">
+            <div class="status-panel grid grid-cols-5 gap-3 mb-6">
                 <div class="status-card bg-green-900 p-3 rounded text-center">
                     <i class="bi bi-heart text-green-400 text-xl"></i>
                     <p class="text-xs text-green-200">Health</p>
@@ -61,9 +60,26 @@ export class ProgrammingCrisisUI {
         `;
     }
 
+    renderTwoColumnLayout() {
+        return `
+            <div class="main-game-layout grid grid-cols-2 gap-6">
+                <!-- Left Column: Debug Grid -->
+                <div class="debug-grid-column">
+                    ${this.renderGameContainer()}
+                </div>
+                
+                <!-- Right Column: Code Editor and Command Reference -->
+                <div class="controls-column space-y-6">
+                    ${this.renderCodeEditor()}
+                    ${this.renderCommandReference()}
+                </div>
+            </div>
+        `;
+    }
+
     renderGameContainer() {
         return `
-            <div class="game-container bg-gray-800 rounded-lg p-4 mb-4">
+            <div class="game-container bg-gray-800 rounded-lg p-4">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-bold text-white">🎮 Debug Grid - Level ${this.room.currentLevel}</h3>
                     <div class="execution-status">
@@ -74,31 +90,55 @@ export class ProgrammingCrisisUI {
                     </div>
                 </div>
                 
-                <div id="game-grid" class="bg-black rounded border-2 border-gray-600 relative" 
-                     style="width: ${this.room.gridManager.gridWidth * this.room.gridManager.cellSize}px; height: ${this.room.gridManager.gridHeight * this.room.gridManager.cellSize}px; margin: 0 auto;">
+                <div id="game-grid" class="bg-black rounded border-2 border-gray-600 relative mx-auto mb-4" 
+                     style="width: ${this.room.gridManager.gridWidth * this.room.gridManager.cellSize}px; height: ${this.room.gridManager.gridHeight * this.room.gridManager.cellSize}px;">
                     <!-- Game grid will be rendered here -->
                 </div>
                 
-                <div class="grid-legend mt-2 text-sm text-gray-400 text-center">
-                    <span class="mr-4">🤖 = You</span>
-                    <span class="mr-4">🐛 = Bug</span>
-                    <span class="mr-4">🧱 = Wall</span>
-                    <span class="mr-4">🔥 = Firewall</span>
-                    <span class="mr-4">💊 = Power-up</span>
+                <div class="grid-legend text-sm text-gray-400 text-center mb-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <span>🤖 = You</span>
+                        <span>🐛 = Bug</span>
+                        <span>🧱 = Wall</span>
+                        <span>🔥 = Firewall</span>
+                        <span>💊 = Power-up</span>
+                        <span>🔐 = Encrypted</span>
+                    </div>
+                </div>
+                
+                <!-- Execution Queue -->
+                <div class="execution-queue bg-gray-900 p-3 rounded">
+                    <h5 class="font-bold text-blue-400 mb-2">⚙️ Execution Queue</h5>
+                    <div id="queue-display" class="text-sm text-gray-300 max-h-20 overflow-y-auto">
+                        <div class="text-gray-500">No commands queued</div>
+                    </div>
                 </div>
             </div>
         `;
     }
 
-    renderControlsPanel() {
+    renderCodeEditor() {
         return `
-            <div class="controls-panel grid grid-cols-2 gap-4">
-                <div class="code-editor bg-gray-700 p-4 rounded">
-                    <h4 class="font-bold text-white mb-3">💻 Code Editor</h4>
-                    <div class="mb-3">
-                        <textarea id="code-input" 
-                                 class="w-full h-40 bg-black text-green-400 font-mono p-3 rounded border border-gray-500 text-sm"
-                                 placeholder="# Write Python-like commands with loops and conditions:
+            <div class="code-editor bg-gray-800 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="text-lg font-bold text-white">💻 Code Editor</h4>
+                    <div class="code-controls flex gap-2">
+                        <button id="step-debug" class="bg-purple-600 hover:bg-purple-500 px-3 py-1 text-sm rounded transition-colors">
+                            <i class="bi bi-skip-forward"></i> Step
+                        </button>
+                        <button id="execute-code" class="bg-green-600 hover:bg-green-500 px-3 py-1 text-sm rounded transition-colors">
+                            <i class="bi bi-play-fill"></i> Run
+                        </button>
+                        <button id="stop-execution" class="bg-red-600 hover:bg-red-500 px-3 py-1 text-sm rounded transition-colors" disabled>
+                            <i class="bi bi-stop-fill"></i> Stop
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <textarea id="code-input" 
+                             class="w-full h-64 bg-black text-green-400 font-mono p-3 rounded border border-gray-500 text-sm resize-none"
+                             placeholder="# Write Python-like commands with loops and conditions:
 # Basic commands:
 # move('up'), move('down'), move('left'), move('right')
 # attack('direction'), scan(), wait(), collect()
@@ -128,64 +168,90 @@ export class ProgrammingCrisisUI {
 #         attack('up')
 #     else:
 #         wait()"></textarea>
-                    </div>
-                    <div class="code-controls flex gap-2">
-                        <button id="execute-code" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded transition-colors">
-                            <i class="bi bi-play-fill"></i> Execute Code
-                        </button>
-                        <button id="clear-code" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition-colors">
-                            <i class="bi bi-trash"></i> Clear
-                        </button>
-                        <button id="stop-execution" class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded transition-colors" disabled>
-                            <i class="bi bi-stop-fill"></i> Stop
-                        </button>
-                        <button id="step-debug" class="bg-purple-600 hover:bg-purple-500 px-3 py-2 rounded transition-colors">
-                            <i class="bi bi-skip-forward"></i> Step
-                        </button>
-                    </div>
-                    <div class="text-xs text-gray-400 mt-2">
-                        💡 Press Tab to indent, Shift+Tab to unindent, Ctrl+Enter to execute
+                </div>
+                
+                <div class="code-actions flex gap-2 mb-3">
+                    <button id="clear-code" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 text-sm rounded transition-colors">
+                        <i class="bi bi-trash"></i> Clear
+                    </button>
+                    <button class="bg-yellow-600 hover:bg-yellow-500 px-4 py-2 text-sm rounded transition-colors" onclick="this.nextSibling.nextSibling.classList.toggle('hidden')">
+                        <i class="bi bi-lightbulb"></i> Examples
+                    </button>
+                    <div class="hidden absolute bg-gray-700 border rounded p-3 text-sm z-10 mt-10 w-72">
+                        <div class="font-bold mb-2">Quick Examples:</div>
+                        <div class="space-y-1 text-xs">
+                            <div class="cursor-pointer hover:bg-gray-600 p-1 rounded" onclick="this.parentElement.parentElement.parentElement.classList.add('hidden'); document.getElementById('code-input').value = 'for i in range(3):\\n    move(\\'right\\')\\n    scan()'">Basic loop</div>
+                            <div class="cursor-pointer hover:bg-gray-600 p-1 rounded" onclick="this.parentElement.parentElement.parentElement.classList.add('hidden'); document.getElementById('code-input').value = 'if bug_nearby(\\'up\\'):\\n    attack(\\'up\\')\\nelse:\\n    move(\\'up\\')'">Conditional attack</div>
+                            <div class="cursor-pointer hover:bg-gray-600 p-1 rounded" onclick="this.parentElement.parentElement.parentElement.classList.add('hidden'); document.getElementById('code-input').value = 'while energy > 10:\\n    if can_move(\\'right\\'):\\n        move(\\'right\\')\\n    else:\\n        wait()'">Smart movement</div>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="text-xs text-gray-400">
+                    💡 Press Tab to indent, Shift+Tab to unindent, Ctrl+Enter to execute
+                </div>
+            </div>
+        `;
+    }
 
-                <div class="game-info bg-gray-700 p-4 rounded">
-                    <h4 class="font-bold text-white mb-3">📋 Enhanced Command Reference</h4>
-                    <div class="commands-list text-sm text-gray-300 space-y-1 mb-4 max-h-48 overflow-y-auto">
+    renderCommandReference() {
+        return `
+            <div class="command-reference bg-gray-800 rounded-lg p-4">
+                <h4 class="text-lg font-bold text-white mb-3">📋 Enhanced Command Reference</h4>
+                
+                <div class="commands-content space-y-4 max-h-80 overflow-y-auto">
+                    <!-- Basic Commands -->
+                    <div class="command-category">
                         <div class="font-bold text-blue-400 mb-2">Basic Commands:</div>
-                        <div><code class="text-green-400">move('direction')</code> - Move in direction (2 energy)</div>
-                        <div><code class="text-red-400">attack('direction')</code> - Attack adjacent bug (5 energy)</div>
-                        <div><code class="text-blue-400">scan()</code> - Reveal nearby info (3 energy)</div>
-                        <div><code class="text-yellow-400">use_item('item')</code> - Use inventory item</div>
-                        <div><code class="text-purple-400">wait()</code> - Skip turn, gain 5 energy</div>
-                        <div><code class="text-cyan-400">collect()</code> - Pick up items at current position</div>
-                        
-                        <div class="font-bold text-orange-400 mb-2 mt-3">Conditionals (Python syntax):</div>
-                        <div><code class="text-orange-400">if condition:</code> - Execute if true</div>
-                        <div><code class="text-orange-400">elif condition:</code> - Else if condition</div>
-                        <div><code class="text-orange-400">else:</code> - Execute if all above false</div>
-                        <div><code class="text-green-300">has_energy()</code> - Check if energy > 10</div>
-                        <div><code class="text-green-300">bug_nearby('dir')</code> - Check for bug in direction</div>
-                        <div><code class="text-green-300">can_move('dir')</code> - Check if movement possible</div>
-                        <div><code class="text-green-300">health_low()</code> - Check if health < 30</div>
-                        <div><code class="text-green-300">energy_low()</code> - Check if energy < 15</div>
-                        
-                        <div class="font-bold text-pink-400 mb-2 mt-3">Loops (Python syntax):</div>
-                        <div><code class="text-pink-400">for i in range(n):</code> - Repeat n times</div>
-                        <div><code class="text-pink-400">while condition:</code> - Repeat while true</div>
-                    </div>
-                    
-                    <div class="execution-queue bg-gray-800 p-3 rounded mb-3">
-                        <h5 class="font-bold text-blue-400 mb-2">⚙️ Execution Queue</h5>
-                        <div id="queue-display" class="text-sm text-gray-300 max-h-16 overflow-y-auto">
-                            <div class="text-gray-500">No commands queued</div>
+                        <div class="command-list text-sm text-gray-300 space-y-1 ml-2">
+                            <div><code class="text-green-400">move('direction')</code> - Move in direction (2 energy)</div>
+                            <div><code class="text-red-400">attack('direction')</code> - Attack adjacent bug (5 energy)</div>
+                            <div><code class="text-blue-400">scan()</code> - Reveal nearby info (3 energy)</div>
+                            <div><code class="text-yellow-400">use_item('item')</code> - Use inventory item</div>
+                            <div><code class="text-purple-400">wait()</code> - Skip turn, gain 5 energy</div>
+                            <div><code class="text-cyan-400">collect()</code> - Pick up items at current position</div>
                         </div>
                     </div>
                     
-                    <div class="inventory bg-gray-800 p-3 rounded">
-                        <h5 class="font-bold text-purple-400 mb-2">🎒 Inventory</h5>
-                        <div id="inventory-display" class="text-sm text-gray-300">
-                            <div class="text-gray-500">Empty</div>
+                    <!-- Conditionals -->
+                    <div class="command-category">
+                        <div class="font-bold text-orange-400 mb-2">Conditionals (Python syntax):</div>
+                        <div class="command-list text-sm text-gray-300 space-y-1 ml-2">
+                            <div><code class="text-orange-400">if condition:</code> - Execute if true</div>
+                            <div><code class="text-orange-400">elif condition:</code> - Else if condition</div>
+                            <div><code class="text-orange-400">else:</code> - Execute if all above false</div>
                         </div>
+                    </div>
+                    
+                    <!-- Condition Functions -->
+                    <div class="command-category">
+                        <div class="font-bold text-green-400 mb-2">Condition Functions:</div>
+                        <div class="command-list text-sm text-gray-300 space-y-1 ml-2">
+                            <div><code class="text-green-300">has_energy()</code> - Check if energy > 10</div>
+                            <div><code class="text-green-300">bug_nearby('dir')</code> - Check for bug in direction</div>
+                            <div><code class="text-green-300">can_move('dir')</code> - Check if movement possible</div>
+                            <div><code class="text-green-300">health_low()</code> - Check if health < 30</div>
+                            <div><code class="text-green-300">energy_low()</code> - Check if energy < 15</div>
+                            <div><code class="text-green-300">energy > 20</code> - Compare energy value</div>
+                            <div><code class="text-green-300">health < 50</code> - Compare health value</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loops -->
+                    <div class="command-category">
+                        <div class="font-bold text-pink-400 mb-2">Loops (Python syntax):</div>
+                        <div class="command-list text-sm text-gray-300 space-y-1 ml-2">
+                            <div><code class="text-pink-400">for i in range(n):</code> - Repeat n times</div>
+                            <div><code class="text-pink-400">while condition:</code> - Repeat while true</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Inventory Section -->
+                <div class="inventory-section mt-4 pt-4 border-t border-gray-600">
+                    <h5 class="font-bold text-purple-400 mb-2">🎒 Inventory</h5>
+                    <div id="inventory-display" class="text-sm text-gray-300 bg-gray-900 p-2 rounded min-h-12">
+                        <div class="text-gray-500">Empty</div>
                     </div>
                 </div>
             </div>
@@ -235,6 +301,15 @@ export class ProgrammingCrisisUI {
                 } else if (e.key === 'Enter') {
                     // Auto-indentation after colon
                     this.handleAutoIndent(e, codeInput);
+                }
+            });
+            
+            // Close examples dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.code-actions')) {
+                    document.querySelectorAll('.code-actions .hidden').forEach(el => {
+                        el.classList.add('hidden');
+                    });
                 }
             });
         }
