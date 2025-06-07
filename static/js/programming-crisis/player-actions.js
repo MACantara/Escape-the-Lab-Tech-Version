@@ -177,6 +177,76 @@ export class PlayerActions {
         return { success: true };
     }
 
+    // New condition checking methods for advanced code execution
+    checkBugNearby(direction) {
+        const directions = {
+            up: { x: 0, y: -1 },
+            down: { x: 0, y: 1 },
+            left: { x: -1, y: 0 },
+            right: { x: 1, y: 0 }
+        };
+        
+        const delta = directions[direction];
+        const targetX = this.room.player.x + delta.x;
+        const targetY = this.room.player.y + delta.y;
+        
+        return this.room.bugs.some(bug => bug.x === targetX && bug.y === targetY);
+    }
+
+    checkCanMove(direction) {
+        const directions = {
+            up: { x: 0, y: -1 },
+            down: { x: 0, y: 1 },
+            left: { x: -1, y: 0 },
+            right: { x: 1, y: 0 }
+        };
+        
+        const delta = directions[direction];
+        const newX = this.room.player.x + delta.x;
+        const newY = this.room.player.y + delta.y;
+        
+        // Check bounds
+        if (newX < 0 || newX >= this.room.gridManager.gridWidth || newY < 0 || newY >= this.room.gridManager.gridHeight) {
+            return false;
+        }
+        
+        // Check for obstacles
+        const obstacle = this.room.obstacles.find(obs => obs.x === newX && obs.y === newY);
+        if (obstacle) return false;
+        
+        // Check for bugs
+        const bug = this.room.bugs.find(bug => bug.x === newX && bug.y === newY);
+        if (bug) return false;
+        
+        return true;
+    }
+
+    checkPowerUpNearby() {
+        return this.room.powerUps.some(pu => 
+            pu.x === this.room.player.x && pu.y === this.room.player.y
+        );
+    }
+
+    checkHealthLow() {
+        return this.room.player.health < 30;
+    }
+
+    checkEnergyLow() {
+        return this.room.player.energy < 15;
+    }
+
+    checkHasItem(itemType) {
+        return this.room.player.inventory.some(item => item.type === itemType);
+    }
+
+    getBugsRemaining() {
+        return this.room.bugs.length;
+    }
+
+    getPlayerPosition() {
+        return { x: this.room.player.x, y: this.room.player.y };
+    }
+
     collectPowerUp(powerUp) {
         switch (powerUp.type) {
             case 'health_pack':
