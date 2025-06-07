@@ -71,18 +71,7 @@ class Room1 {
                     <div class="game-area-container bg-black rounded-lg p-4 mb-4">
                         <h4 class="text-white font-bold mb-3 text-center">⚔️ DEFEND SUPER EARTH</h4>
                         <div id="defense-game" class="relative bg-gray-900 rounded" style="width: 800px; height: 400px; margin: 0 auto; border: 2px solid #4299e1;">
-                            <div class="absolute top-2 left-2 text-white text-sm">
-                                Move shield to block alien attacks!
-                            </div>
-                            <div class="absolute top-2 right-2 text-white text-sm">
-                                Wave ${this.wave}: ${this.waveManager.getWaveDifficulty()}
-                            </div>
-                            <div class="absolute bottom-2 left-2 text-white text-sm">
-                                Progress: <span id="wave-counter">${this.waveManager.getAttacksThisWave()}/${this.attacksPerWave}</span>
-                            </div>
-                            <div class="absolute bottom-2 right-2 text-white text-sm">
-                                Shield: <span id="shield-counter">${Math.round(this.shieldStrength)}%</span>
-                            </div>
+                            <!-- Game elements will be added by setupDefenseGame -->
                         </div>
                     </div>
                     
@@ -118,6 +107,34 @@ class Room1 {
 
     setupDefenseGame() {
         const gameArea = document.getElementById('defense-game');
+        if (!gameArea) {
+            console.error('Defense game area not found');
+            return;
+        }
+        
+        // Clear any existing content
+        gameArea.innerHTML = '';
+        
+        // Add game instructions and info overlays
+        const instructions = document.createElement('div');
+        instructions.className = 'absolute top-2 left-2 text-white text-sm z-20 pointer-events-none';
+        instructions.textContent = 'Move shield to block alien attacks!';
+        gameArea.appendChild(instructions);
+        
+        const waveInfo = document.createElement('div');
+        waveInfo.className = 'absolute top-2 right-2 text-white text-sm z-20 pointer-events-none';
+        waveInfo.textContent = `Wave ${this.wave}: ${this.waveManager.getWaveDifficulty()}`;
+        gameArea.appendChild(waveInfo);
+        
+        const progressInfo = document.createElement('div');
+        progressInfo.className = 'absolute bottom-2 left-2 text-white text-sm z-20 pointer-events-none';
+        progressInfo.innerHTML = `Progress: <span id="wave-counter">${this.waveManager.getAttacksThisWave()}/${this.attacksPerWave}</span>`;
+        gameArea.appendChild(progressInfo);
+        
+        const shieldInfo = document.createElement('div');
+        shieldInfo.className = 'absolute bottom-2 right-2 text-white text-sm z-20 pointer-events-none';
+        shieldInfo.innerHTML = `Shield: <span id="shield-counter">${Math.round(this.shieldStrength)}%</span>`;
+        gameArea.appendChild(shieldInfo);
         
         // Create and add shield
         const shield = this.shieldManager.createShieldElement();
@@ -125,6 +142,8 @@ class Room1 {
         
         // Setup shield controls
         this.shieldManager.setupShieldControls();
+        
+        console.log('Defense game setup complete with shield');
     }
 
     startDefense() {

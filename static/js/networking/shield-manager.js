@@ -6,15 +6,23 @@ export class ShieldManager {
     createShieldElement() {
         const shield = document.createElement('div');
         shield.id = 'shield';
-        shield.className = 'absolute bg-blue-500 rounded-full opacity-80 cursor-move';
+        shield.className = 'absolute rounded-full cursor-move';
         shield.style.width = `${this.room.shieldSize}px`;
         shield.style.height = `${this.room.shieldSize}px`;
         shield.style.left = `${this.room.shieldPosition.x - this.room.shieldSize/2}px`;
         shield.style.top = `${this.room.shieldPosition.y - this.room.shieldSize/2}px`;
+        shield.style.backgroundColor = '#3b82f6';
+        shield.style.opacity = '0.8';
         shield.style.zIndex = '10';
         shield.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.6)';
         shield.style.border = '2px solid rgba(255, 255, 255, 0.8)';
+        shield.style.pointerEvents = 'auto';
+        shield.style.userSelect = 'none';
         
+        // Add visual indicator that this is a shield
+        shield.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px; color: white;">🛡️</div>';
+        
+        console.log('Shield element created:', shield);
         return shield;
     }
 
@@ -22,16 +30,31 @@ export class ShieldManager {
         const gameArea = document.getElementById('defense-game');
         const shield = document.getElementById('shield');
         
+        if (!gameArea || !shield) {
+            console.error('Game area or shield not found for controls setup');
+            return;
+        }
+        
         let isDragging = false;
+        let isMouseInArea = false;
         
         // Mouse controls
         shield.addEventListener('mousedown', (e) => {
             isDragging = true;
             e.preventDefault();
+            console.log('Shield drag started');
+        });
+        
+        gameArea.addEventListener('mouseenter', () => {
+            isMouseInArea = true;
+        });
+        
+        gameArea.addEventListener('mouseleave', () => {
+            isMouseInArea = false;
         });
         
         gameArea.addEventListener('mousemove', (e) => {
-            if (isDragging || this.room.isDefending) {
+            if ((isDragging || (this.room.isDefending && isMouseInArea))) {
                 const rect = gameArea.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -40,6 +63,9 @@ export class ShieldManager {
         });
         
         document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                console.log('Shield drag ended');
+            }
             isDragging = false;
         });
         
@@ -63,6 +89,8 @@ export class ShieldManager {
         document.addEventListener('touchend', () => {
             isDragging = false;
         });
+        
+        console.log('Shield controls setup complete');
     }
 
     moveShield(x, y) {
