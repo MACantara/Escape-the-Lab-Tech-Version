@@ -1439,10 +1439,13 @@ export class LevelEditor {
         
         document.body.appendChild(modal);
         
-        // Event listeners
-        modal.getElementById('close-load-modal').addEventListener('click', () => {
-            modal.remove();
-        });
+        // Event listeners - Fix: Use querySelector instead of getElementById on modal
+        const closeBtn = modal.querySelector('#close-load-modal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.remove();
+            });
+        }
         
         modal.querySelectorAll('.level-item').forEach(item => {
             item.addEventListener('click', (e) => {
