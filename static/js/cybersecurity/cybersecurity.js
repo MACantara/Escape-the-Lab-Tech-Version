@@ -138,4 +138,9 @@ class Room5 {
     }
 }
 
+// Register the class globally for backward compatibility
 window.Room5 = Room5;
+
+// Export the class for ES6 module imports
+export { Room5 };
+export default Room5;
