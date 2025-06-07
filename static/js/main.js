@@ -51,6 +51,14 @@ class EscapeTheLabGame {
             this.restartGame();
         });
         
+        // Add character menu button listener
+        const characterMenuBtn = document.getElementById('character-menu-btn');
+        if (characterMenuBtn) {
+            characterMenuBtn.addEventListener('click', () => {
+                this.cosmeticManager.showCosmeticMenu();
+            });
+        }
+        
         // Add fullscreen toggle
         document.addEventListener('keydown', (e) => {
             if (e.key === 'F11' && this.gameActive) {
