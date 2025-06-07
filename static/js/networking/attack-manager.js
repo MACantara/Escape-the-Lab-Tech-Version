@@ -14,6 +14,10 @@ export class AttackManager {
         // Get current wave difficulty
         const attackPattern = this.getRandomAttackPattern();
         
+        // Calculate Super Earth position (bottom center)
+        const superEarthX = 400; // Center of 800px wide game area
+        const superEarthY = 360; // Near bottom of 400px tall game area (400 - 40px from bottom)
+        
         const attack = {
             id: this.nextAttackId++,
             type: attackPattern.name,
@@ -23,8 +27,8 @@ export class AttackManager {
             icon: attackPattern.icon,
             x: this.getSpawnX(attackPattern.pattern),
             y: this.getSpawnY(attackPattern.pattern),
-            targetX: this.room.shieldPosition.x + (Math.random() - 0.5) * 100,
-            targetY: this.room.shieldPosition.y + (Math.random() - 0.5) * 100,
+            targetX: superEarthX + (Math.random() - 0.5) * 60, // Small variance around Super Earth
+            targetY: superEarthY + (Math.random() - 0.5) * 40,
             element: null,
             startTime: Date.now(),
             size: 20
@@ -225,7 +229,7 @@ export class AttackManager {
     }
 
     handleNetworkDamage(attack) {
-        // Attack hit the network - reduce integrity
+        // Attack hit Super Earth - reduce integrity
         this.room.networkIntegrity = Math.max(0, this.room.networkIntegrity - attack.damage);
         this.room.audioManager.playSound('network_hit');
         this.showNetworkDamage();
@@ -241,36 +245,56 @@ export class AttackManager {
             gameArea.style.backgroundColor = '#1f2937';
         }, 200);
         
-        // Make Super Earth flash red when hit
+        // Make Super Earth flash red when hit and show impact
         if (superEarth) {
             const originalBackground = superEarth.style.background;
             const originalBorder = superEarth.style.border;
+            const originalTransform = superEarth.style.transform;
             
             superEarth.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
             superEarth.style.border = '3px solid #f87171';
-            superEarth.style.transform = 'scale(1.1)';
+            superEarth.style.transform = 'scale(1.2)';
+            superEarth.style.boxShadow = '0 0 30px rgba(248, 113, 113, 1)';
             
-            setTimeout(() => {
-                superEarth.style.background = originalBackground;
-                superEarth.style.border = originalBorder;
-                superEarth.style.transform = 'scale(1)';
-            }, 300);
+            // Add shake effect
+            let shakeCount = 0;
+            const shakeInterval = setInterval(() => {
+                if (shakeCount < 6) {
+                    superEarth.style.transform = `scale(1.2) translate(${Math.random() * 6 - 3}px, ${Math.random() * 6 - 3}px)`;
+                    shakeCount++;
+                } else {
+                    clearInterval(shakeInterval);
+                    superEarth.style.background = originalBackground;
+                    superEarth.style.border = originalBorder;
+                    superEarth.style.transform = originalTransform;
+                    superEarth.style.boxShadow = '0 0 20px rgba(96, 165, 250, 0.6)';
+                }
+            }, 50);
         }
         
-        // Show damage indicator
+        // Show damage indicator near Super Earth
         const damageIndicator = document.createElement('div');
         damageIndicator.className = 'absolute text-red-400 font-bold text-xl animate-pulse';
         damageIndicator.style.left = '50%';
-        damageIndicator.style.top = '50%';
-        damageIndicator.style.transform = 'translate(-50%, -50%)';
-        damageIndicator.style.zIndex = '20';
-        damageIndicator.textContent = 'SUPER EARTH HIT!';
+        damageIndicator.style.bottom = '120px'; // Above Super Earth
+        damageIndicator.style.transform = 'translateX(-50%)';
+        damageIndicator.style.zIndex = '30';
+        damageIndicator.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+        damageIndicator.innerHTML = `
+            <div class="text-center">
+                <div class="text-2xl">💥</div>
+                <div>SUPER EARTH HIT!</div>
+                <div class="text-sm">-${attack.damage} Network Integrity</div>
+            </div>
+        `;
         
         gameArea.appendChild(damageIndicator);
         
         setTimeout(() => {
-            damageIndicator.remove();
-        }, 1500);
+            if (damageIndicator.parentNode) {
+                damageIndicator.remove();
+            }
+        }, 2000);
     }
 
     clearAllAttacks() {

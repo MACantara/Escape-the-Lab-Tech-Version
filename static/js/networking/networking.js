@@ -138,7 +138,7 @@ class Room1 {
         // Add game instructions and info overlays
         const instructions = document.createElement('div');
         instructions.className = 'absolute top-2 left-2 text-white text-sm z-20 pointer-events-none';
-        instructions.textContent = 'Move shield to block alien attacks!';
+        instructions.textContent = 'Protect Super Earth! Block attacks with your shield!';
         gameArea.appendChild(instructions);
         
         const waveInfo = document.createElement('div');
@@ -183,7 +183,7 @@ class Room1 {
             this.updateDefenseGame();
         }, 50); // 20 FPS
         
-        this.showMessage('Defense started! Move your mouse to control the shield.', 'info');
+        this.showMessage('Defense started! Protect Super Earth from alien attacks!', 'info');
     }
 
     updateDefenseGame() {
