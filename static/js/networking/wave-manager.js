@@ -12,6 +12,14 @@ export class WaveManager {
         return Math.min(this.room.currentWaveAttacks, this.room.attacksPerWave);
     }
 
+    shouldSpawnAttack() {
+        if (!this.room.isDefending) return false;
+        if (this.room.currentWaveAttacks >= this.room.attacksPerWave) return false;
+        
+        const spawnRate = this.room.attackManager.getAttackSpawnRate();
+        return Math.random() < spawnRate;
+    }
+
     checkWaveCompletion() {
         // Check if current wave is complete
         if (this.room.currentWaveAttacks >= this.room.attacksPerWave && 
