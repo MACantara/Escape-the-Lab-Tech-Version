@@ -84,10 +84,33 @@ export class ShieldManager {
         }
     }
 
+    checkShieldCollision(attack) {
+        const distance = Math.sqrt(
+            Math.pow(attack.x - this.room.shieldPosition.x, 2) + 
+            Math.pow(attack.y - this.room.shieldPosition.y, 2)
+        );
+        
+        const collisionThreshold = this.room.shieldSize/2 + attack.size/2;
+        
+        if (distance <= collisionThreshold) {
+            // Block attack and reduce shield strength
+            const damage = attack.damage || 15;
+            this.room.shieldStrength = Math.max(0, this.room.shieldStrength - damage);
+            
+            // Visual feedback for successful block
+            this.showShieldImpact();
+            this.room.audioManager.playSound('shield_block');
+            
+            return true; // Attack blocked
+        }
+        
+        return false; // Attack missed shield
+    }
+
     updateShieldStrength() {
-        // Regenerate shield strength slowly when not under attack
+        // Regenerate shield strength slowly when not under heavy attack
         if (this.room.shieldStrength < 100 && this.room.isDefending) {
-            this.room.shieldStrength = Math.min(100, this.room.shieldStrength + 0.5);
+            this.room.shieldStrength = Math.min(100, this.room.shieldStrength + 0.3);
         }
         
         // Update visual shield strength
@@ -99,10 +122,13 @@ export class ShieldManager {
             // Change color based on strength
             if (strengthRatio > 0.7) {
                 shield.style.backgroundColor = '#3b82f6'; // Blue - strong
+                shield.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.6)';
             } else if (strengthRatio > 0.4) {
                 shield.style.backgroundColor = '#f59e0b'; // Orange - medium
+                shield.style.boxShadow = '0 0 20px rgba(245, 158, 11, 0.6)';
             } else {
                 shield.style.backgroundColor = '#ef4444'; // Red - weak
+                shield.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6)';
             }
             
             // Add warning effects when shield is low
@@ -112,35 +138,6 @@ export class ShieldManager {
                 shield.style.animation = 'none';
             }
         }
-        
-        // Update shield counter display
-        const shieldCounter = document.getElementById('shield-counter');
-        if (shieldCounter) {
-            shieldCounter.textContent = `${Math.round(this.room.shieldStrength)}%`;
-        }
-    }
-
-    checkShieldCollision(attack) {
-        const distance = Math.sqrt(
-            Math.pow(attack.x - this.room.shieldPosition.x, 2) + 
-            Math.pow(attack.y - this.room.shieldPosition.y, 2)
-        );
-        
-        const collisionThreshold = this.room.shieldSize/2 + attack.size/2;
-        
-        if (distance <= collisionThreshold) {
-            // Block attack and reduce shield strength
-            const damage = attack.damage || 20;
-            this.room.shieldStrength = Math.max(0, this.room.shieldStrength - damage);
-            
-            // Visual feedback for successful block
-            this.showShieldImpact();
-            this.room.playSound('shield_block');
-            
-            return true; // Attack blocked
-        }
-        
-        return false; // Attack missed shield
     }
 
     showShieldImpact() {
