@@ -13,13 +13,6 @@ export class ProgrammingCrisisUI {
                     <p class="text-gray-300 mt-2">Debug the system by writing code to control your character!</p>
                 </div>
                 
-                <!-- Add level editor button -->
-                <div class="text-center mb-6">
-                    <button id="open-level-editor" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-colors">
-                        <i class="bi bi-pencil-square"></i> Level Editor
-                    </button>
-                </div>
-                
                 ${this.renderTwoColumnLayout()}
             </div>
         `;
@@ -116,7 +109,7 @@ export class ProgrammingCrisisUI {
                 </div>
                 
                 <!-- Execution Queue -->
-                <div class="execution-queue bg-gray-900 p-3 rounded border border-gray-700">
+                <div class="execution-queue bg-gray-900 p-3 rounded border border-gray-700 mb-4">
                     <h5 class="font-bold text-blue-400 mb-2 flex items-center">
                         <i class="bi bi-gear-fill mr-2"></i>
                         Execution Queue
@@ -124,6 +117,15 @@ export class ProgrammingCrisisUI {
                     <div id="queue-display" class="text-sm text-gray-300 max-h-20 overflow-y-auto">
                         <div class="text-gray-500">No commands queued</div>
                     </div>
+                </div>
+                
+                <!-- Level Editor Button -->
+                <div class="level-editor-section text-center pt-4 border-t border-gray-700">
+                    <button id="open-level-editor" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm rounded-lg transition-colors border border-blue-500">
+                        <i class="bi bi-pencil-square mr-2"></i>
+                        Level Editor
+                    </button>
+                    <p class="text-xs text-gray-400 mt-2">Create custom levels and challenges</p>
                 </div>
             </div>
         `;
