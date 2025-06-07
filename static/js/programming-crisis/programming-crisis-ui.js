@@ -14,13 +14,12 @@ export class ProgrammingCrisisUI {
                 </div>
                 
                 <!-- Add level editor button -->
-                <div class="text-center mb-4">
+                <div class="text-center mb-6">
                     <button id="open-level-editor" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-colors">
                         <i class="bi bi-pencil-square"></i> Level Editor
                     </button>
                 </div>
                 
-                ${this.renderStatusPanel()}
                 ${this.renderTwoColumnLayout()}
             </div>
         `;
@@ -28,42 +27,10 @@ export class ProgrammingCrisisUI {
         this.setupEventListeners();
     }
 
-    renderStatusPanel() {
-        return `
-            <div class="status-panel grid grid-cols-5 gap-3 mb-6">
-                <div class="status-card bg-green-900 p-3 rounded text-center">
-                    <i class="bi bi-heart text-green-400 text-xl"></i>
-                    <p class="text-xs text-green-200">Health</p>
-                    <p id="player-health" class="text-lg font-bold text-green-100">${this.room.player.health}</p>
-                </div>
-                <div class="status-card bg-blue-900 p-3 rounded text-center">
-                    <i class="bi bi-lightning text-blue-400 text-xl"></i>
-                    <p class="text-xs text-blue-200">Energy</p>
-                    <p id="player-energy" class="text-lg font-bold text-blue-100">${this.room.player.energy}</p>
-                </div>
-                <div class="status-card bg-purple-900 p-3 rounded text-center">
-                    <i class="bi bi-bug text-purple-400 text-xl"></i>
-                    <p class="text-xs text-purple-200">Bugs Fixed</p>
-                    <p id="bugs-defeated" class="text-lg font-bold text-purple-100">${this.room.bugsDefeated}</p>
-                </div>
-                <div class="status-card bg-yellow-900 p-3 rounded text-center">
-                    <i class="bi bi-layers text-yellow-400 text-xl"></i>
-                    <p class="text-xs text-yellow-200">Level</p>
-                    <p id="current-level" class="text-lg font-bold text-yellow-100">${this.room.currentLevel}/${this.room.maxLevel}</p>
-                </div>
-                <div class="status-card bg-red-900 p-3 rounded text-center">
-                    <i class="bi bi-clock text-red-400 text-xl"></i>
-                    <p class="text-xs text-red-200">Time</p>
-                    <p id="time-remaining" class="text-lg font-bold text-red-100">${Math.floor(this.room.timeRemaining / 60)}m</p>
-                </div>
-            </div>
-        `;
-    }
-
     renderTwoColumnLayout() {
         return `
             <div class="main-game-layout grid grid-cols-2 gap-6">
-                <!-- Left Column: Debug Grid -->
+                <!-- Left Column: Debug Grid with integrated status -->
                 <div class="debug-grid-column">
                     ${this.renderGameContainer()}
                 </div>
@@ -80,6 +47,7 @@ export class ProgrammingCrisisUI {
     renderGameContainer() {
         return `
             <div class="game-container bg-gray-800 rounded-lg p-4">
+                <!-- Header with title and execution status -->
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-bold text-white">🎮 Debug Grid - Level ${this.room.currentLevel}</h3>
                     <div class="execution-status">
@@ -90,13 +58,54 @@ export class ProgrammingCrisisUI {
                     </div>
                 </div>
                 
+                <!-- Integrated Status Panel -->
+                <div class="debug-status-panel grid grid-cols-5 gap-2 mb-4 p-3 bg-gray-900 rounded-lg border border-gray-600">
+                    <div class="status-metric text-center">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="bi bi-heart text-green-400 text-lg mr-1"></i>
+                            <span class="text-xs text-green-200 font-medium">Health</span>
+                        </div>
+                        <div id="player-health" class="text-lg font-bold text-green-100">${this.room.player.health}</div>
+                    </div>
+                    <div class="status-metric text-center">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="bi bi-lightning text-blue-400 text-lg mr-1"></i>
+                            <span class="text-xs text-blue-200 font-medium">Energy</span>
+                        </div>
+                        <div id="player-energy" class="text-lg font-bold text-blue-100">${this.room.player.energy}</div>
+                    </div>
+                    <div class="status-metric text-center">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="bi bi-bug text-purple-400 text-lg mr-1"></i>
+                            <span class="text-xs text-purple-200 font-medium">Bugs Fixed</span>
+                        </div>
+                        <div id="bugs-defeated" class="text-lg font-bold text-purple-100">${this.room.bugsDefeated}</div>
+                    </div>
+                    <div class="status-metric text-center">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="bi bi-layers text-yellow-400 text-lg mr-1"></i>
+                            <span class="text-xs text-yellow-200 font-medium">Level</span>
+                        </div>
+                        <div id="current-level" class="text-lg font-bold text-yellow-100">${this.room.currentLevel}/${this.room.maxLevel}</div>
+                    </div>
+                    <div class="status-metric text-center">
+                        <div class="flex items-center justify-center mb-1">
+                            <i class="bi bi-clock text-red-400 text-lg mr-1"></i>
+                            <span class="text-xs text-red-200 font-medium">Time</span>
+                        </div>
+                        <div id="time-remaining" class="text-lg font-bold text-red-100">${Math.floor(this.room.timeRemaining / 60)}m</div>
+                    </div>
+                </div>
+                
+                <!-- Game Grid -->
                 <div id="game-grid" class="bg-black rounded border-2 border-gray-600 relative mx-auto mb-4" 
                      style="width: ${this.room.gridManager.gridWidth * this.room.gridManager.cellSize}px; height: ${this.room.gridManager.gridHeight * this.room.gridManager.cellSize}px;">
                     <!-- Game grid will be rendered here -->
                 </div>
                 
+                <!-- Grid Legend -->
                 <div class="grid-legend text-sm text-gray-400 text-center mb-4">
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-3 gap-2">
                         <span>🤖 = You</span>
                         <span>🐛 = Bug</span>
                         <span>🧱 = Wall</span>
@@ -107,8 +116,11 @@ export class ProgrammingCrisisUI {
                 </div>
                 
                 <!-- Execution Queue -->
-                <div class="execution-queue bg-gray-900 p-3 rounded">
-                    <h5 class="font-bold text-blue-400 mb-2">⚙️ Execution Queue</h5>
+                <div class="execution-queue bg-gray-900 p-3 rounded border border-gray-700">
+                    <h5 class="font-bold text-blue-400 mb-2 flex items-center">
+                        <i class="bi bi-gear-fill mr-2"></i>
+                        Execution Queue
+                    </h5>
                     <div id="queue-display" class="text-sm text-gray-300 max-h-20 overflow-y-auto">
                         <div class="text-gray-500">No commands queued</div>
                     </div>
@@ -199,7 +211,7 @@ export class ProgrammingCrisisUI {
             <div class="command-reference bg-gray-800 rounded-lg p-4">
                 <h4 class="text-lg font-bold text-white mb-3">📋 Enhanced Command Reference</h4>
                 
-                <div class="commands-content space-y-4 max-h-80 overflow-y-auto">
+                <div class="commands-content space-y-4 max-h-64 overflow-y-auto">
                     <!-- Basic Commands -->
                     <div class="command-category">
                         <div class="font-bold text-blue-400 mb-2">Basic Commands:</div>
@@ -249,8 +261,11 @@ export class ProgrammingCrisisUI {
                 
                 <!-- Inventory Section -->
                 <div class="inventory-section mt-4 pt-4 border-t border-gray-600">
-                    <h5 class="font-bold text-purple-400 mb-2">🎒 Inventory</h5>
-                    <div id="inventory-display" class="text-sm text-gray-300 bg-gray-900 p-2 rounded min-h-12">
+                    <h5 class="font-bold text-purple-400 mb-2 flex items-center">
+                        <i class="bi bi-backpack mr-2"></i>
+                        Inventory
+                    </h5>
+                    <div id="inventory-display" class="text-sm text-gray-300 bg-gray-900 p-2 rounded min-h-12 border border-gray-700">
                         <div class="text-gray-500">Empty</div>
                     </div>
                 </div>
