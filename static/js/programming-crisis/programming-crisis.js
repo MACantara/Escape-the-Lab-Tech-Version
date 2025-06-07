@@ -220,11 +220,18 @@ class Room6 {
     }
 
     updateDisplay() {
-        document.getElementById('player-health').textContent = this.player.health;
-        document.getElementById('player-energy').textContent = this.player.energy;
-        document.getElementById('bugs-defeated').textContent = this.bugsDefeated;
-        document.getElementById('current-level').textContent = `${this.currentLevel}/${this.maxLevel}`;
-        document.getElementById('time-remaining').textContent = `${Math.floor(this.timeRemaining / 60)}m`;
+        // Check if elements exist before updating them
+        const playerHealth = document.getElementById('player-health');
+        const playerEnergy = document.getElementById('player-energy');
+        const bugsDefeated = document.getElementById('bugs-defeated');
+        const currentLevel = document.getElementById('current-level');
+        const timeRemaining = document.getElementById('time-remaining');
+        
+        if (playerHealth) playerHealth.textContent = this.player.health;
+        if (playerEnergy) playerEnergy.textContent = this.player.energy;
+        if (bugsDefeated) bugsDefeated.textContent = this.bugsDefeated;
+        if (currentLevel) currentLevel.textContent = `${this.currentLevel}/${this.maxLevel}`;
+        if (timeRemaining) timeRemaining.textContent = `${Math.floor(this.timeRemaining / 60)}m`;
         
         this.codeExecutor.updateExecutionDisplay();
         this.updateInventoryDisplay();
