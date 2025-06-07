@@ -2,6 +2,7 @@ import { GridManager } from './grid-manager.js';
 import { CodeExecutor } from './code-executor.js';
 import { PlayerActions } from './player-actions.js';
 import { LevelGenerator } from './level-generator.js';
+import { LevelEditor } from './level-editor.js';
 
 class Room6 {
     constructor(game) {
@@ -31,6 +32,7 @@ class Room6 {
         this.codeExecutor = new CodeExecutor(this);
         this.playerActions = new PlayerActions(this);
         this.levelGenerator = new LevelGenerator(this);
+        this.levelEditor = new LevelEditor(this);
     }
 
     async init() {
@@ -50,6 +52,13 @@ class Room6 {
                     <i class="bi bi-bug text-6xl text-red-500 animate-pulse"></i>
                     <h2 class="text-3xl font-bold mt-4 text-red-400">PROGRAMMING CRISIS</h2>
                     <p class="text-gray-300 mt-2">Debug the system by writing code to control your character!</p>
+                </div>
+                
+                <!-- Add level editor button -->
+                <div class="text-center mb-4">
+                    <button id="open-level-editor" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-colors">
+                        <i class="bi bi-pencil-square"></i> Level Editor
+                    </button>
                 </div>
                 
                 <div class="status-panel grid grid-cols-5 gap-3 mb-4">
@@ -185,6 +194,11 @@ class Room6 {
                 e.preventDefault();
                 this.codeExecutor.executeCode();
             }
+        });
+        
+        // Level editor button
+        document.getElementById('open-level-editor')?.addEventListener('click', () => {
+            this.levelEditor.enterEditorMode();
         });
     }
 
