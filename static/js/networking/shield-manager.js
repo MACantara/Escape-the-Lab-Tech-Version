@@ -36,25 +36,20 @@ export class ShieldManager {
         }
         
         let isDragging = false;
-        let isMouseInArea = false;
         
-        // Mouse controls
-        shield.addEventListener('mousedown', (e) => {
+        // Mouse controls - simplified for better tracking
+        gameArea.addEventListener('mousedown', (e) => {
             isDragging = true;
-            e.preventDefault();
-            console.log('Shield drag started');
-        });
-        
-        gameArea.addEventListener('mouseenter', () => {
-            isMouseInArea = true;
-        });
-        
-        gameArea.addEventListener('mouseleave', () => {
-            isMouseInArea = false;
+            const rect = gameArea.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            this.moveShield(x, y);
+            console.log('Mouse down, shield move started');
         });
         
         gameArea.addEventListener('mousemove', (e) => {
-            if ((isDragging || (this.room.isDefending && isMouseInArea))) {
+            // Always move shield when mouse is in area and defense is active
+            if (this.room.isDefending || isDragging) {
                 const rect = gameArea.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -64,15 +59,27 @@ export class ShieldManager {
         
         document.addEventListener('mouseup', () => {
             if (isDragging) {
-                console.log('Shield drag ended');
+                console.log('Mouse up, drag ended');
             }
             isDragging = false;
         });
         
-        // Touch controls for mobile
-        shield.addEventListener('touchstart', (e) => {
+        // Also add click handler to shield itself
+        shield.addEventListener('mousedown', (e) => {
             isDragging = true;
             e.preventDefault();
+            console.log('Shield clicked, drag started');
+        });
+        
+        // Touch controls for mobile
+        gameArea.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            e.preventDefault();
+            const rect = gameArea.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            this.moveShield(x, y);
         });
         
         gameArea.addEventListener('touchmove', (e) => {
@@ -96,6 +103,8 @@ export class ShieldManager {
     moveShield(x, y) {
         // Keep shield within game area bounds
         const gameArea = document.getElementById('defense-game');
+        if (!gameArea) return;
+        
         const maxX = gameArea.offsetWidth - this.room.shieldSize/2;
         const maxY = gameArea.offsetHeight - this.room.shieldSize/2;
         
@@ -109,6 +118,9 @@ export class ShieldManager {
         if (shield) {
             shield.style.left = `${x - this.room.shieldSize/2}px`;
             shield.style.top = `${y - this.room.shieldSize/2}px`;
+            
+            // Add visual feedback for movement
+            shield.style.transition = 'none'; // Remove transition for smooth tracking
         }
     }
 

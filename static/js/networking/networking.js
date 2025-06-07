@@ -151,12 +151,19 @@ class Room1 {
         
         this.isDefending = true;
         this.audioManager.playSound('defense_start');
-        this.render(); // Update button text
+        
+        // Re-setup shield controls to ensure proper mouse tracking
+        this.shieldManager.setupShieldControls();
+        
+        // Update UI to show defense is active
+        this.updateDisplay();
         
         // Start defense timer
         this.defenseTimer = setInterval(() => {
             this.updateDefenseGame();
         }, 50); // 20 FPS
+        
+        this.showMessage('Defense started! Move your mouse to control the shield.', 'info');
     }
 
     updateDefenseGame() {
@@ -322,6 +329,28 @@ class Room1 {
         }
         this.isDefending = false;
         this.attackManager.clearAllAttacks();
+    }
+
+    showMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `fixed top-20 right-4 p-3 rounded z-50 animate-pulse max-w-sm`;
+        
+        switch(type) {
+            case 'success':
+                messageDiv.classList.add('bg-green-800', 'text-green-200', 'border', 'border-green-500');
+                break;
+            case 'error':
+                messageDiv.classList.add('bg-red-800', 'text-red-200', 'border', 'border-red-500');
+                break;
+            case 'info':
+                messageDiv.classList.add('bg-blue-800', 'text-blue-200', 'border', 'border-blue-500');
+                break;
+        }
+        
+        messageDiv.textContent = message;
+        document.body.appendChild(messageDiv);
+        
+        setTimeout(() => messageDiv.remove(), 3000);
     }
 }
 
