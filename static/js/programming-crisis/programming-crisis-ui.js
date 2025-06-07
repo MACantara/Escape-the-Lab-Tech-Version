@@ -103,22 +103,31 @@ export class ProgrammingCrisisUI {
 # move('up'), move('down'), move('left'), move('right')
 # attack('direction'), scan(), wait(), collect()
 # 
-# Loops:
+# Loops (Python syntax):
 # for i in range(3):
 #     move('right')
+#     scan()
 # 
-# Conditions:
+# Conditions (Python syntax):
 # if has_energy():
 #     attack('up')
+# elif bug_nearby('left'):
+#     attack('left')
 # else:
 #     wait()
 #
+# While loops:
+# while can_move('right'):
+#     move('right')
+#
 # Example multi-line program:
 # for i in range(2):
-#     move('right')
+#     if can_move('right'):
+#         move('right')
 #     if bug_nearby('up'):
 #         attack('up')
-#     wait()"></textarea>
+#     else:
+#         wait()"></textarea>
                     </div>
                     <div class="code-controls flex gap-2">
                         <button id="execute-code" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded transition-colors">
@@ -134,6 +143,9 @@ export class ProgrammingCrisisUI {
                             <i class="bi bi-skip-forward"></i> Step
                         </button>
                     </div>
+                    <div class="text-xs text-gray-400 mt-2">
+                        💡 Press Tab to indent, Shift+Tab to unindent, Ctrl+Enter to execute
+                    </div>
                 </div>
 
                 <div class="game-info bg-gray-700 p-4 rounded">
@@ -147,14 +159,17 @@ export class ProgrammingCrisisUI {
                         <div><code class="text-purple-400">wait()</code> - Skip turn, gain 5 energy</div>
                         <div><code class="text-cyan-400">collect()</code> - Pick up items at current position</div>
                         
-                        <div class="font-bold text-orange-400 mb-2 mt-3">Conditionals:</div>
+                        <div class="font-bold text-orange-400 mb-2 mt-3">Conditionals (Python syntax):</div>
                         <div><code class="text-orange-400">if condition:</code> - Execute if true</div>
-                        <div><code class="text-orange-400">else:</code> - Execute if false</div>
+                        <div><code class="text-orange-400">elif condition:</code> - Else if condition</div>
+                        <div><code class="text-orange-400">else:</code> - Execute if all above false</div>
                         <div><code class="text-green-300">has_energy()</code> - Check if energy > 10</div>
                         <div><code class="text-green-300">bug_nearby('dir')</code> - Check for bug in direction</div>
                         <div><code class="text-green-300">can_move('dir')</code> - Check if movement possible</div>
+                        <div><code class="text-green-300">health_low()</code> - Check if health < 30</div>
+                        <div><code class="text-green-300">energy_low()</code> - Check if energy < 15</div>
                         
-                        <div class="font-bold text-pink-400 mb-2 mt-3">Loops:</div>
+                        <div class="font-bold text-pink-400 mb-2 mt-3">Loops (Python syntax):</div>
                         <div><code class="text-pink-400">for i in range(n):</code> - Repeat n times</div>
                         <div><code class="text-pink-400">while condition:</code> - Repeat while true</div>
                     </div>
@@ -194,18 +209,110 @@ export class ProgrammingCrisisUI {
             this.room.codeExecutor.stepDebug();
         });
 
-        // Allow enter to execute single line
-        document.getElementById('code-input')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                e.preventDefault();
-                this.room.codeExecutor.executeCode();
-            }
-        });
+        // Enhanced code input event listeners
+        const codeInput = document.getElementById('code-input');
+        if (codeInput) {
+            // Tab functionality for indentation
+            codeInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    
+                    const start = codeInput.selectionStart;
+                    const end = codeInput.selectionEnd;
+                    const value = codeInput.value;
+                    
+                    if (e.shiftKey) {
+                        // Shift+Tab: Remove indentation
+                        this.handleUnindent(codeInput, start, end);
+                    } else {
+                        // Tab: Add indentation
+                        this.handleIndent(codeInput, start, end);
+                    }
+                } else if (e.key === 'Enter' && e.ctrlKey) {
+                    // Ctrl+Enter: Execute code
+                    e.preventDefault();
+                    this.room.codeExecutor.executeCode();
+                } else if (e.key === 'Enter') {
+                    // Auto-indentation after colon
+                    this.handleAutoIndent(e, codeInput);
+                }
+            });
+        }
         
         // Level editor button
         document.getElementById('open-level-editor')?.addEventListener('click', () => {
             this.room.levelEditor.enterEditorMode();
         });
+    }
+
+    handleIndent(codeInput, start, end) {
+        const value = codeInput.value;
+        const indent = '    '; // 4 spaces
+        
+        if (start === end) {
+            // No selection, just insert tab at cursor
+            const newValue = value.substring(0, start) + indent + value.substring(end);
+            codeInput.value = newValue;
+            codeInput.selectionStart = codeInput.selectionEnd = start + indent.length;
+        } else {
+            // Selection exists, indent all selected lines
+            const lines = value.split('\n');
+            const startLine = value.substring(0, start).split('\n').length - 1;
+            const endLine = value.substring(0, end).split('\n').length - 1;
+            
+            for (let i = startLine; i <= endLine; i++) {
+                lines[i] = indent + lines[i];
+            }
+            
+            codeInput.value = lines.join('\n');
+            codeInput.selectionStart = start + indent.length;
+            codeInput.selectionEnd = end + (indent.length * (endLine - startLine + 1));
+        }
+    }
+
+    handleUnindent(codeInput, start, end) {
+        const value = codeInput.value;
+        const lines = value.split('\n');
+        const startLine = value.substring(0, start).split('\n').length - 1;
+        const endLine = value.substring(0, end).split('\n').length - 1;
+        
+        let removedChars = 0;
+        for (let i = startLine; i <= endLine; i++) {
+            if (lines[i].startsWith('    ')) {
+                lines[i] = lines[i].substring(4);
+                removedChars += 4;
+            } else if (lines[i].startsWith('\t')) {
+                lines[i] = lines[i].substring(1);
+                removedChars += 1;
+            }
+        }
+        
+        codeInput.value = lines.join('\n');
+        codeInput.selectionStart = Math.max(0, start - 4);
+        codeInput.selectionEnd = Math.max(0, end - removedChars);
+    }
+
+    handleAutoIndent(e, codeInput) {
+        const start = codeInput.selectionStart;
+        const value = codeInput.value;
+        const currentLine = value.substring(0, start).split('\n').pop();
+        
+        // Check if current line ends with colon (for if/for/while statements)
+        if (currentLine.trim().endsWith(':')) {
+            // Let the Enter key work normally first
+            setTimeout(() => {
+                const newStart = codeInput.selectionStart;
+                const indent = this.getIndentLevel(currentLine) + '    '; // Add 4 spaces
+                const newValue = codeInput.value.substring(0, newStart) + indent + codeInput.value.substring(newStart);
+                codeInput.value = newValue;
+                codeInput.selectionStart = codeInput.selectionEnd = newStart + indent.length;
+            }, 0);
+        }
+    }
+
+    getIndentLevel(line) {
+        const match = line.match(/^(\s*)/);
+        return match ? match[1] : '';
     }
 
     renderSuccessScreen() {

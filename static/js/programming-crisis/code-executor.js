@@ -60,7 +60,7 @@ export class CodeExecutor {
             const indentLevel = this.getIndentLevel(line);
             const lineNumber = index + 1;
             
-            // Handle control structures
+            // Handle control structures with Python syntax
             if (trimmed.match(/^for\s+\w+\s+in\s+range\s*\(\s*\d+\s*\)\s*:/)) {
                 const match = trimmed.match(/^for\s+(\w+)\s+in\s+range\s*\(\s*(\d+)\s*\)\s*:/);
                 tokens.push({
@@ -72,7 +72,7 @@ export class CodeExecutor {
                 });
             }
             else if (trimmed.match(/^while\s+.+:/)) {
-                const condition = trimmed.replace(/^while\s+/, '').replace(/:$/, '');
+                const condition = trimmed.replace(/^while\s+/, '').replace(/:$/, '').trim();
                 tokens.push({
                     type: 'while_loop',
                     condition,
@@ -81,9 +81,18 @@ export class CodeExecutor {
                 });
             }
             else if (trimmed.match(/^if\s+.+:/)) {
-                const condition = trimmed.replace(/^if\s+/, '').replace(/:$/, '');
+                const condition = trimmed.replace(/^if\s+/, '').replace(/:$/, '').trim();
                 tokens.push({
                     type: 'if_statement',
+                    condition,
+                    indentLevel,
+                    lineNumber
+                });
+            }
+            else if (trimmed.match(/^elif\s+.+:/)) {
+                const condition = trimmed.replace(/^elif\s+/, '').replace(/:$/, '').trim();
+                tokens.push({
+                    type: 'elif_statement',
                     condition,
                     indentLevel,
                     lineNumber
@@ -148,6 +157,10 @@ export class CodeExecutor {
                     type: 'conditional',
                     condition: token.condition,
                     ifBody: this.parseTokens(ifBlock.ifTokens),
+                    elifBodies: ifBlock.elifBodies ? ifBlock.elifBodies.map(elif => ({
+                        condition: elif.condition,
+                        body: this.parseTokens(elif.tokens)
+                    })) : [],
                     elseBody: ifBlock.elseTokens ? this.parseTokens(ifBlock.elseTokens) : [],
                     lineNumber: token.lineNumber
                 });
@@ -177,19 +190,44 @@ export class CodeExecutor {
     extractConditionalBlock(tokens, startIndex, parentIndentLevel) {
         let i = startIndex + 1;
         const ifTokens = [];
+        const elifBodies = [];
         let elseTokens = null;
         
         // Extract if block
         while (i < tokens.length && tokens[i].indentLevel > parentIndentLevel) {
-            if (tokens[i].type === 'else_statement' && tokens[i].indentLevel === parentIndentLevel + 1) {
+            if ((tokens[i].type === 'elif_statement' || tokens[i].type === 'else_statement') && 
+                tokens[i].indentLevel === parentIndentLevel + 1) {
                 break;
             }
             ifTokens.push(tokens[i]);
             i++;
         }
         
+        // Handle elif blocks
+        while (i < tokens.length && tokens[i].type === 'elif_statement' && 
+               tokens[i].indentLevel === parentIndentLevel + 1) {
+            const elifCondition = tokens[i].condition;
+            i++; // Skip elif statement
+            
+            const elifTokens = [];
+            while (i < tokens.length && tokens[i].indentLevel > parentIndentLevel) {
+                if ((tokens[i].type === 'elif_statement' || tokens[i].type === 'else_statement') && 
+                    tokens[i].indentLevel === parentIndentLevel + 1) {
+                    break;
+                }
+                elifTokens.push(tokens[i]);
+                i++;
+            }
+            
+            elifBodies.push({
+                condition: elifCondition,
+                tokens: elifTokens
+            });
+        }
+        
         // Check for else block
-        if (i < tokens.length && tokens[i].type === 'else_statement') {
+        if (i < tokens.length && tokens[i].type === 'else_statement' && 
+            tokens[i].indentLevel === parentIndentLevel + 1) {
             i++; // Skip else statement
             elseTokens = [];
             while (i < tokens.length && tokens[i].indentLevel > parentIndentLevel) {
@@ -198,7 +236,7 @@ export class CodeExecutor {
             }
         }
         
-        return { ifTokens, elseTokens, nextIndex: i };
+        return { ifTokens, elifBodies, elseTokens, nextIndex: i };
     }
 
     parseBasicCommand(line, lineNumber) {
@@ -340,13 +378,25 @@ export class CodeExecutor {
     }
 
     executeConditional(command) {
+        // Check if condition
         if (this.evaluateCondition(command.condition)) {
-            // Add if body commands to the front of the queue
             this.codeQueue.unshift(...command.ifBody.map(cmd => ({ ...cmd })));
-        } else if (command.elseBody.length > 0) {
-            // Add else body commands to the front of the queue
+            return { success: true };
+        }
+        
+        // Check elif conditions
+        for (const elifBlock of command.elifBodies) {
+            if (this.evaluateCondition(elifBlock.condition)) {
+                this.codeQueue.unshift(...elifBlock.body.map(cmd => ({ ...cmd })));
+                return { success: true };
+            }
+        }
+        
+        // Execute else block if no conditions matched
+        if (command.elseBody.length > 0) {
             this.codeQueue.unshift(...command.elseBody.map(cmd => ({ ...cmd })));
         }
+        
         return { success: true };
     }
 
@@ -356,6 +406,15 @@ export class CodeExecutor {
             return this.room.player.energy > 10;
         }
         
+        if (condition === 'health_low()') {
+            return this.room.player.health < 30;
+        }
+        
+        if (condition === 'energy_low()') {
+            return this.room.player.energy < 15;
+        }
+        
+        // Handle function calls with parameters
         if (condition.match(/bug_nearby\s*\(\s*['"]?(up|down|left|right)['"]?\s*\)/)) {
             const direction = condition.match(/['"]?(up|down|left|right)['"]?/)[1];
             return this.room.playerActions.checkBugNearby(direction);
@@ -366,35 +425,40 @@ export class CodeExecutor {
             return this.room.playerActions.checkCanMove(direction);
         }
         
-        if (condition.match(/health_low\s*\(\s*\)/)) {
-            return this.room.player.health < 30;
+        // Handle comparison operations
+        if (condition.match(/energy\s*[<>=!]+\s*\d+/)) {
+            return this.evaluateComparison(condition, this.room.player.energy);
         }
         
-        if (condition.match(/energy_low\s*\(\s*\)/)) {
-            return this.room.player.energy < 15;
+        if (condition.match(/health\s*[<>=!]+\s*\d+/)) {
+            return this.evaluateComparison(condition, this.room.player.health);
         }
+        
+        // Handle boolean conditions
+        if (condition === 'True' || condition === 'true') return true;
+        if (condition === 'False' || condition === 'false') return false;
         
         // Default to false for unknown conditions
+        console.warn(`Unknown condition: ${condition}`);
         return false;
     }
 
-    stepDebug() {
-        if (!this.isExecuting) {
-            this.stepMode = true;
-            this.executeCode();
-        } else {
-            this.executeNextCommand();
+    evaluateComparison(condition, value) {
+        const match = condition.match(/(\w+)\s*([<>=!]+)\s*(\d+)/);
+        if (!match) return false;
+        
+        const operator = match[2];
+        const compareValue = parseInt(match[3]);
+        
+        switch (operator) {
+            case '<': return value < compareValue;
+            case '<=': return value <= compareValue;
+            case '>': return value > compareValue;
+            case '>=': return value >= compareValue;
+            case '==': return value === compareValue;
+            case '!=': return value !== compareValue;
+            default: return false;
         }
-    }
-
-    stopExecution() {
-        this.isExecuting = false;
-        this.stepMode = false;
-        this.codeQueue = [];
-        this.variables.clear();
-        this.callStack = [];
-        this.updateExecutionDisplay();
-        this.room.showMessage('Code execution stopped.', 'info');
     }
 
     updateExecutionDisplay() {
@@ -415,7 +479,7 @@ export class CodeExecutor {
                 const preview = this.codeQueue.slice(0, 5).map(cmd => {
                     let cmdText = cmd.type;
                     if (cmd.direction) cmdText += `('${cmd.direction}')`;
-                    else if (cmd.condition) cmdText += ` (${cmd.condition.substring(0, 20)}...)`;
+                    else if (cmd.condition) cmdText += ` (${cmd.condition.substring(0, 15)}...)`;
                     else if (cmd.count) cmdText += ` (${cmd.count}x)`;
                     return `<div class="text-yellow-300">${cmdText}</div>`;
                 }).join('');
