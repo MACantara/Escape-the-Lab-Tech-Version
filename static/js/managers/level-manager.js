@@ -80,14 +80,15 @@ export class LevelManager {
             `;
 
             // Handle modular rooms with ES6 imports
-            if (roomNumber === 1 || roomNumber === 2 || roomNumber === 4) {
+            if (roomNumber === 1 || roomNumber === 2 || roomNumber === 4 || roomNumber === 6) {
                 console.log(`Loading modular room: ${roomName}`);
                 
                 // Dynamic import for modular rooms
                 const moduleMap = {
                     1: '../networking/networking.js',
                     2: '../cloud-computing/cloud-computing.js', 
-                    4: '../database-emergency/database-emergency.js'
+                    4: '../database-emergency/database-emergency.js',
+                    6: '../programming-crisis/programming-crisis.js'
                 };
                 
                 const modulePath = moduleMap[roomNumber];
@@ -111,13 +112,12 @@ export class LevelManager {
                     throw importError;
                 }
             } else {
-                // Handle non-modular rooms (3, 5, 6) with traditional script loading
+                // Handle non-modular rooms (3, 5) with traditional script loading
                 console.log(`Loading traditional room: ${roomName}`);
                 
                 const scriptMap = {
                     3: 'static/js/ai-systems/ai-systems.js',
-                    5: 'static/js/cybersecurity/cybersecurity.js',
-                    6: 'static/js/programming-crisis/programming-crisis.js'
+                    5: 'static/js/cybersecurity/cybersecurity.js'
                 };
                 
                 const scriptPath = scriptMap[roomNumber];
