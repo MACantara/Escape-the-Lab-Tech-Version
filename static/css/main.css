@@ -1,9 +1,46 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
+/* Base typography */
 body {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     min-height: 100vh;
+}
+
+/* Retro gaming font for headers and important UI elements */
+h1, h2, .game-title, .retro-text {
+    font-family: 'Press Start 2P', cursive;
+    font-weight: 400;
+    line-height: 1.4;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* Gaming UI elements */
+.timer, .room-indicator, .status-card, .btn-primary, .btn-danger {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+/* Terminal and code elements */
+.terminal-text, .challenge-input, pre, code {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+/* Game content uses Roboto for readability */
+.room-container, .challenge-content, p, .instructions {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+}
+
+/* Heavy weight for important information */
+.stats-display, .wave-info, .score-display {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
 }
 
 .room-container {
@@ -16,6 +53,7 @@ body {
     background: rgba(0, 0, 0, 0.7);
     border: 2px solid #374151;
     transition: all 0.3s ease;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
 }
 
 .challenge-input:focus {
@@ -26,6 +64,8 @@ body {
 .btn-primary {
     background: linear-gradient(45deg, #3b82f6, #1d4ed8);
     transition: all 0.3s ease;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
 }
 
 .btn-primary:hover {
@@ -35,6 +75,8 @@ body {
 
 .btn-danger {
     background: linear-gradient(45deg, #ef4444, #dc2626);
+    font-size: 0.75rem;
+    letter-spacing: 1px;
 }
 
 .room-progress {
@@ -47,12 +89,24 @@ body {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.terminal-text {
-    font-family: 'Courier New', monospace;
-    font-size: 0.875rem;
-    line-height: 1.4;
+/* Enhanced retro styling for headers */
+h1 {
+    font-size: 1.5rem;
+    color: #ff6b6b;
+    text-shadow: 
+        2px 2px 0px #000,
+        4px 4px 0px rgba(255, 107, 107, 0.3);
 }
 
+h2 {
+    font-size: 1.2rem;
+    color: #4ecdc4;
+    text-shadow: 
+        1px 1px 0px #000,
+        2px 2px 0px rgba(78, 205, 196, 0.3);
+}
+
+/* Game UI animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -69,4 +123,64 @@ body {
 @keyframes flash {
     0%, 100% { background-color: transparent; }
     50% { background-color: rgba(239, 68, 68, 0.2); }
+}
+
+/* Pixelated borders for retro game feel */
+.retro-border {
+    border-style: solid;
+    border-width: 2px;
+    border-image: 
+        repeating-linear-gradient(45deg, 
+            #ff6b6b 0px, #ff6b6b 2px, 
+            transparent 2px, transparent 4px
+        ) 2;
+}
+
+/* Game area styling */
+.game-area, .defense-game {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+}
+
+/* Status displays */
+.status-display {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Responsive font sizing */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1rem;
+    }
+    
+    h2 {
+        font-size: 0.9rem;
+    }
+    
+    .timer, .room-indicator, .status-card {
+        font-size: 0.6rem;
+    }
+    
+    .btn-primary, .btn-danger {
+        font-size: 0.6rem;
+    }
+}
+
+/* Loading screen styling */
+.loading {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    color: #4ecdc4;
+    text-shadow: 1px 1px 0px #000;
+}
+
+/* Error messages */
+.error {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+    color: #ff6b6b;
+    text-shadow: 1px 1px 0px #000;
 }
